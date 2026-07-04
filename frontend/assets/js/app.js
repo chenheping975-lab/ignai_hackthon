@@ -1,4 +1,4 @@
-const ribbons = document.querySelector(".marquee div");
+const ribbons = document.querySelector(".signal-strip div");
 
 if (ribbons) {
   ribbons.innerHTML += ribbons.innerHTML;
