@@ -1,0 +1,14 @@
+.DS_Store
+node_modules/
+dist/
+build/
+.next/
+target/
+tmp/
+*.class
+*.war
+*.log
+.env
+.env.local
+backend/java-web/src/main/webapp/uploads/*
+!backend/java-web/src/main/webapp/uploads/.gitkeep

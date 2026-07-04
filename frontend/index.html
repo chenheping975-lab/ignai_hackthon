@@ -1,0 +1,264 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>IGNAI Hackathon OS</title>
+    <meta
+      name="description"
+      content="IGNAI 黑客松管理平台：活动配置、报名审核、作品提交、开放评分、飞书备份。"
+    />
+    <link rel="icon" href="./assets/img/ignai-torch.png" />
+    <link rel="stylesheet" href="./assets/css/styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <a class="brand" href="#workspace" aria-label="IGNAI Hackathon OS">
+        <img src="./assets/img/ignai-logo-horizontal.webp" alt="IGNAI" />
+        <span>Hackathon OS</span>
+      </a>
+      <nav class="nav-links" aria-label="主导航">
+        <a href="#operations">流程</a>
+        <a href="#showcase">作品</a>
+        <a href="#architecture">接口</a>
+        <a href="https://www.ignai.cn/" target="_blank" rel="noreferrer">官网</a>
+        <a href="https://aihacktour.com/products" target="_blank" rel="noreferrer">对标站</a>
+      </nav>
+      <a class="nav-action" href="#admin-console">进入管理台</a>
+    </header>
+
+    <main>
+      <section class="workspace" id="workspace">
+        <div class="workspace-copy">
+          <p class="eyebrow">IGNAI Hackathon Platform</p>
+          <h1>把线下黑客松流程，收进一个轻量工作台。</h1>
+          <p class="lead">
+            报名、AI 标签、审核邮件、作品提交、开放评分、飞书备份和赛后展示，先用 Java Web 做成可交付闭环。
+          </p>
+
+          <div class="hero-actions">
+            <a class="primary-button" href="#admin-console">查看运营台</a>
+            <a class="secondary-button" href="#architecture">看接口设计</a>
+          </div>
+
+          <div class="source-strip" aria-label="官网与对标网站">
+            <a href="https://www.ignai.cn/" target="_blank" rel="noreferrer">
+              <strong>官网</strong>
+              <span>www.ignai.cn</span>
+            </a>
+            <a href="https://aihacktour.com/products" target="_blank" rel="noreferrer">
+              <strong>对标</strong>
+              <span>AI Hack Tour Products</span>
+            </a>
+          </div>
+        </div>
+
+        <section class="ops-panel" aria-label="黑客松运营概览">
+          <div class="ops-panel-head">
+            <div>
+              <p class="panel-kicker">2026 AI Skillathon</p>
+              <h2>长沙站运营中</h2>
+            </div>
+            <span class="status-pill">开放报名</span>
+          </div>
+
+          <div class="metric-grid">
+            <div>
+              <span>报名</span>
+              <strong>86</strong>
+            </div>
+            <div>
+              <span>团队</span>
+              <strong>18</strong>
+            </div>
+            <div>
+              <span>待审</span>
+              <strong>12</strong>
+            </div>
+            <div>
+              <span>作品</span>
+              <strong>24</strong>
+            </div>
+          </div>
+
+          <div class="flow-board">
+            <div class="flow-step active">
+              <span>01</span>
+              <strong>活动配置</strong>
+            </div>
+            <div class="flow-step active">
+              <span>02</span>
+              <strong>报名组队</strong>
+            </div>
+            <div class="flow-step">
+              <span>03</span>
+              <strong>审核通知</strong>
+            </div>
+            <div class="flow-step">
+              <span>04</span>
+              <strong>作品评分</strong>
+            </div>
+          </div>
+
+          <img
+            class="panel-image"
+            src="./assets/img/local-global-embers.png"
+            alt="IGNAI local global visual"
+          />
+        </section>
+      </section>
+
+      <section class="section-band" id="operations">
+        <div class="section-heading">
+          <p class="eyebrow">Core workflow</p>
+          <h2>核心功能拆解</h2>
+        </div>
+        <div class="feature-grid">
+          <article class="feature-card">
+            <span>报名</span>
+            <h3>个人 / 团队报名</h3>
+            <p>动态报名字段、队员信息、赛道选择、重复报名校验、AI 标签与摘要。</p>
+          </article>
+          <article class="feature-card">
+            <span>审核</span>
+            <h3>审核与邮件 Agent</h3>
+            <p>管理员最终决策，AI 生成邮件草稿，发送前可编辑、预览和定制化发送。</p>
+          </article>
+          <article class="feature-card">
+            <span>提交</span>
+            <h3>项目资料提交</h3>
+            <p>队伍、成员、项目说明、Demo、代码链接、PPT/PDF/HTML/ZIP/MP3/图片附件。</p>
+          </article>
+          <article class="feature-card">
+            <span>评分</span>
+            <h3>开放评分和投票</h3>
+            <p>撤掉评委身份，按活动规则开放评分，防重复提交，赛后转作品展示。</p>
+          </article>
+          <article class="feature-card">
+            <span>飞书</span>
+            <h3>本地 + 飞书备份</h3>
+            <p>本地数据库留底，附件本地备份，飞书 Base / 云盘作为协作和备份面板。</p>
+          </article>
+          <article class="feature-card">
+            <span>曝光</span>
+            <h3>作品展示回看</h3>
+            <p>按赛道筛选、排序、详情页展示附件与外链，保留赛后传播页面。</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="admin-console" id="admin-console">
+        <div class="console-tabs" role="tablist" aria-label="管理台模块">
+          <button class="mode-button active" data-mode="signup" type="button">报名</button>
+          <button class="mode-button" data-mode="review" type="button">审核</button>
+          <button class="mode-button" data-mode="project" type="button">作品</button>
+          <button class="mode-button" data-mode="rating" type="button">评分</button>
+          <button class="mode-button" data-mode="sync" type="button">飞书</button>
+        </div>
+
+        <div class="console-layout">
+          <section class="console-main">
+            <div class="console-head">
+              <div>
+                <p class="panel-kicker">Admin Console</p>
+                <h2 id="mode-title">报名字段配置</h2>
+              </div>
+              <button class="ghost-button" id="sync-button" type="button">同步飞书</button>
+            </div>
+
+            <div class="dynamic-panel" id="dynamic-panel"></div>
+          </section>
+
+          <aside class="activity-feed" aria-label="实时动态">
+            <div class="feed-head">
+              <h3>运营动态</h3>
+              <span>Live</span>
+            </div>
+            <ul id="feed-list">
+              <li><strong>AI 标签</strong><span>为 12 条报名生成技能与赛道标签</span></li>
+              <li><strong>邮件草稿</strong><span>待发送通过通知 18 封</span></li>
+              <li><strong>文件备份</strong><span>PPT 与 HTML 附件已写入本地备份</span></li>
+              <li><strong>飞书队列</strong><span>3 条作品记录等待重试</span></li>
+            </ul>
+          </aside>
+        </div>
+      </section>
+
+      <section class="showcase" id="showcase">
+        <div class="showcase-copy">
+          <p class="eyebrow">Project showcase</p>
+          <h2>作品页以轻展示和反复曝光为主。</h2>
+          <p>
+            MVP 不承接视频上传。项目详情使用封面、文字、Demo 链接、代码链接和附件信息承载，降低存储、转码和审核成本。
+          </p>
+        </div>
+        <div class="project-grid">
+          <article class="project-card">
+            <img src="./assets/img/collaboration-threads.png" alt="Team collaboration visual" />
+            <div>
+              <span>Agent Tools</span>
+              <h3>Campus Agent Hub</h3>
+              <p>面向高校实训的课程 Agent 与作品沉淀平台。</p>
+              <footer><strong>4.7</strong><small>128 votes</small></footer>
+            </div>
+          </article>
+          <article class="project-card">
+            <img src="./assets/img/halo-showcase.png" alt="AI project showcase visual" />
+            <div>
+              <span>Productivity</span>
+              <h3>Feishu Sync Board</h3>
+              <p>报名和作品资料自动归档到飞书 Base 和云盘。</p>
+              <footer><strong>4.5</strong><small>96 votes</small></footer>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section class="architecture" id="architecture">
+        <div class="section-heading">
+          <p class="eyebrow">Backend design</p>
+          <h2>端口与接口一眼可查</h2>
+        </div>
+
+        <div class="api-grid">
+          <div class="api-block">
+            <h3>服务端口</h3>
+            <dl>
+              <div><dt>Frontend</dt><dd>5173</dd></div>
+              <div><dt>Java Web</dt><dd>8080</dd></div>
+              <div><dt>MySQL</dt><dd>3306</dd></div>
+              <div><dt>API Prefix</dt><dd>/api</dd></div>
+            </dl>
+          </div>
+          <div class="api-block">
+            <h3>核心接口</h3>
+            <ul>
+              <li><code>POST /api/public/events/{id}/registrations</code></li>
+              <li><code>PATCH /api/admin/registrations/{id}/review</code></li>
+              <li><code>POST /api/projects</code></li>
+              <li><code>POST /api/public/projects/{id}/ratings</code></li>
+              <li><code>POST /api/admin/feishu/sync</code></li>
+            </ul>
+          </div>
+          <div class="api-block">
+            <h3>数据主线</h3>
+            <ul>
+              <li>events / tracks / form_fields</li>
+              <li>registrations / teams / team_members</li>
+              <li>projects / project_files</li>
+              <li>ratings / votes / mail_logs / feishu_sync_logs</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <span>IGNAI Hackathon OS</span>
+      <a href="https://www.ignai.cn/" target="_blank" rel="noreferrer">IGNAI 官网</a>
+      <a href="https://aihacktour.com/products" target="_blank" rel="noreferrer">AI Hack Tour</a>
+    </footer>
+
+    <script src="./assets/js/app.js"></script>
+  </body>
+</html>

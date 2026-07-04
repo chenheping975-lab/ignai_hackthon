@@ -1,0 +1,598 @@
+openapi: 3.0.3
+info:
+  title: IGNAI Hackathon Platform API
+  version: 0.3.0
+  description: >
+    Java Web / Servlet 版本接口设计。MVP 无评委角色，无视频上传，评分为开放评分。
+servers:
+  - url: http://localhost:8080/api
+    description: Local Java Web API
+tags:
+  - name: Public
+  - name: Admin
+  - name: Registration
+  - name: Mail
+  - name: Project
+  - name: Rating
+  - name: Feishu
+paths:
+  /health:
+    get:
+      tags: [Public]
+      summary: Health check
+      responses:
+        "200":
+          description: OK
+  /public/events/current:
+    get:
+      tags: [Public]
+      summary: 获取当前活动配置
+      responses:
+        "200":
+          description: 当前活动
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EventResponse"
+  /public/events/{eventId}/tracks:
+    get:
+      tags: [Public]
+      summary: 获取赛道列表
+      parameters:
+        - $ref: "#/components/parameters/EventId"
+      responses:
+        "200":
+          description: 赛道列表
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListResponse"
+  /public/events/{eventId}/form-fields:
+    get:
+      tags: [Public]
+      summary: 获取动态表单字段
+      parameters:
+        - $ref: "#/components/parameters/EventId"
+        - name: target
+          in: query
+          required: true
+          schema:
+            type: string
+            enum: [registration, project]
+      responses:
+        "200":
+          description: 字段列表
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListResponse"
+  /public/events/{eventId}/registrations:
+    post:
+      tags: [Registration]
+      summary: 提交报名
+      parameters:
+        - $ref: "#/components/parameters/EventId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegistrationCreateRequest"
+      responses:
+        "200":
+          description: 报名成功
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RegistrationResponse"
+        "409":
+          description: 重复报名
+  /admin/login:
+    post:
+      tags: [Admin]
+      summary: 管理员登录
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [account, password]
+              properties:
+                account:
+                  type: string
+                password:
+                  type: string
+      responses:
+        "200":
+          description: 登录成功
+  /admin/logout:
+    post:
+      tags: [Admin]
+      summary: 管理员退出
+      responses:
+        "200":
+          description: 已退出
+  /admin/events:
+    get:
+      tags: [Admin]
+      summary: 活动列表
+      responses:
+        "200":
+          description: 活动列表
+    post:
+      tags: [Admin]
+      summary: 创建活动
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EventUpsertRequest"
+      responses:
+        "200":
+          description: 创建成功
+  /admin/events/{eventId}:
+    put:
+      tags: [Admin]
+      summary: 更新活动
+      parameters:
+        - $ref: "#/components/parameters/EventId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EventUpsertRequest"
+      responses:
+        "200":
+          description: 更新成功
+  /admin/events/{eventId}/form-fields:
+    put:
+      tags: [Admin]
+      summary: 保存表单字段
+      parameters:
+        - $ref: "#/components/parameters/EventId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [targetType, fields]
+              properties:
+                targetType:
+                  type: string
+                  enum: [registration, project]
+                fields:
+                  type: array
+                  items:
+                    $ref: "#/components/schemas/FormField"
+      responses:
+        "200":
+          description: 保存成功
+  /admin/registrations:
+    get:
+      tags: [Registration]
+      summary: 报名列表
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [pending, approved, rejected, waitlist, cancelled]
+        - name: keyword
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: 报名列表
+  /admin/registrations/{registrationId}:
+    get:
+      tags: [Registration]
+      summary: 报名详情
+      parameters:
+        - $ref: "#/components/parameters/RegistrationId"
+      responses:
+        "200":
+          description: 报名详情
+  /admin/registrations/{registrationId}/ai-tags:
+    post:
+      tags: [Registration]
+      summary: 触发 AI 标签与摘要
+      parameters:
+        - $ref: "#/components/parameters/RegistrationId"
+      responses:
+        "200":
+          description: AI 任务已创建
+  /admin/registrations/{registrationId}/review:
+    patch:
+      tags: [Registration]
+      summary: 审核报名
+      parameters:
+        - $ref: "#/components/parameters/RegistrationId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [status]
+              properties:
+                status:
+                  type: string
+                  enum: [approved, rejected, waitlist]
+                note:
+                  type: string
+      responses:
+        "200":
+          description: 审核成功
+  /admin/mail/templates:
+    get:
+      tags: [Mail]
+      summary: 邮件模板列表
+      responses:
+        "200":
+          description: 模板列表
+    post:
+      tags: [Mail]
+      summary: 创建邮件模板
+      responses:
+        "200":
+          description: 创建成功
+  /admin/mail/drafts:
+    post:
+      tags: [Mail]
+      summary: 生成邮件草稿
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [scene, targetType, targetId]
+              properties:
+                scene:
+                  type: string
+                targetType:
+                  type: string
+                targetId:
+                  type: integer
+      responses:
+        "200":
+          description: 草稿内容
+  /admin/mail/send:
+    post:
+      tags: [Mail]
+      summary: 人工确认后发送邮件
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [recipientEmail, subject, body]
+              properties:
+                recipientEmail:
+                  type: string
+                subject:
+                  type: string
+                body:
+                  type: string
+      responses:
+        "200":
+          description: 已发送或进入发送队列
+  /teams:
+    post:
+      tags: [Project]
+      summary: 创建或加入队伍
+      responses:
+        "200":
+          description: 队伍信息
+  /teams/me:
+    get:
+      tags: [Project]
+      summary: 当前用户队伍
+      responses:
+        "200":
+          description: 队伍详情
+  /projects:
+    post:
+      tags: [Project]
+      summary: 创建或保存作品
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProjectUpsertRequest"
+      responses:
+        "200":
+          description: 作品信息
+  /projects/{projectId}:
+    put:
+      tags: [Project]
+      summary: 更新作品
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+      responses:
+        "200":
+          description: 更新成功
+  /projects/{projectId}/files:
+    post:
+      tags: [Project]
+      summary: 上传附件
+      description: MVP 不允许上传视频文件。
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        "200":
+          description: 上传成功
+        "400":
+          description: 文件类型不允许
+  /projects/{projectId}/submit:
+    post:
+      tags: [Project]
+      summary: 正式提交作品
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+      responses:
+        "200":
+          description: 提交成功
+  /public/projects:
+    get:
+      tags: [Project]
+      summary: 公开作品列表
+      parameters:
+        - name: trackId
+          in: query
+          schema:
+            type: integer
+        - name: sort
+          in: query
+          schema:
+            type: string
+            enum: [latest, rating, votes]
+      responses:
+        "200":
+          description: 作品列表
+  /public/projects/{projectId}:
+    get:
+      tags: [Project]
+      summary: 公开作品详情
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+      responses:
+        "200":
+          description: 作品详情
+  /public/projects/{projectId}/ratings:
+    post:
+      tags: [Rating]
+      summary: 开放评分
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [score, raterKey]
+              properties:
+                score:
+                  type: number
+                  minimum: 1
+                  maximum: 5
+                raterKey:
+                  type: string
+                sourceType:
+                  type: string
+                  enum: [public, participant, onsite_code]
+      responses:
+        "200":
+          description: 评分成功
+        "409":
+          description: 重复评分
+  /public/projects/{projectId}/votes:
+    post:
+      tags: [Rating]
+      summary: 投票
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [voterKey]
+              properties:
+                voterKey:
+                  type: string
+                sourceType:
+                  type: string
+                  enum: [public, participant, onsite_code]
+      responses:
+        "200":
+          description: 投票成功
+        "409":
+          description: 重复投票
+  /admin/feishu/sync:
+    post:
+      tags: [Feishu]
+      summary: 创建飞书同步任务
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [targetType, targetIds, syncType]
+              properties:
+                targetType:
+                  type: string
+                  enum: [registration, team, project, project_file, mail_log]
+                targetIds:
+                  type: array
+                  items:
+                    type: integer
+                syncType:
+                  type: string
+                  enum: [base, drive, board, export]
+      responses:
+        "200":
+          description: 同步任务已创建
+  /admin/feishu/logs:
+    get:
+      tags: [Feishu]
+      summary: 飞书同步日志
+      responses:
+        "200":
+          description: 同步日志
+  /admin/feishu/logs/{logId}/retry:
+    post:
+      tags: [Feishu]
+      summary: 重试飞书同步
+      parameters:
+        - name: logId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: 重试任务已创建
+components:
+  parameters:
+    EventId:
+      name: eventId
+      in: path
+      required: true
+      schema:
+        type: integer
+    RegistrationId:
+      name: registrationId
+      in: path
+      required: true
+      schema:
+        type: integer
+    ProjectId:
+      name: projectId
+      in: path
+      required: true
+      schema:
+        type: integer
+  schemas:
+    ApiResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+        data:
+          type: object
+    ListResponse:
+      allOf:
+        - $ref: "#/components/schemas/ApiResponse"
+    EventResponse:
+      allOf:
+        - $ref: "#/components/schemas/ApiResponse"
+    EventUpsertRequest:
+      type: object
+      required: [title]
+      properties:
+        title:
+          type: string
+        subtitle:
+          type: string
+        location:
+          type: string
+        description:
+          type: string
+        registrationDeadline:
+          type: string
+          format: date-time
+        submissionDeadline:
+          type: string
+          format: date-time
+        ratingEnabled:
+          type: boolean
+        voteEnabled:
+          type: boolean
+    FormField:
+      type: object
+      required: [fieldKey, label, fieldType]
+      properties:
+        fieldKey:
+          type: string
+        label:
+          type: string
+        fieldType:
+          type: string
+          enum: [text, textarea, radio, checkbox, select, date, file, url]
+        required:
+          type: boolean
+        options:
+          type: array
+          items:
+            type: string
+        sortOrder:
+          type: integer
+    RegistrationCreateRequest:
+      type: object
+      required: [registrationType, contactName, contactPhone]
+      properties:
+        registrationType:
+          type: string
+          enum: [individual, team]
+        teamName:
+          type: string
+        contactName:
+          type: string
+        contactPhone:
+          type: string
+        contactEmail:
+          type: string
+        trackId:
+          type: integer
+        members:
+          type: array
+          items:
+            type: object
+        payload:
+          type: object
+    RegistrationResponse:
+      allOf:
+        - $ref: "#/components/schemas/ApiResponse"
+    ProjectUpsertRequest:
+      type: object
+      required: [eventId, teamId, title]
+      properties:
+        eventId:
+          type: integer
+        teamId:
+          type: integer
+        trackId:
+          type: integer
+        title:
+          type: string
+        tagline:
+          type: string
+        description:
+          type: string
+        demoUrl:
+          type: string
+        codeUrl:
+          type: string

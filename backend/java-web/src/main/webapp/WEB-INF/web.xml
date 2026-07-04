@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns="http://xmlns.jcp.org/xml/ns/javaee"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_4_0.xsd"
+         version="4.0">
+
+  <display-name>IGNAI Hackathon Platform</display-name>
+
+  <servlet>
+    <servlet-name>HealthServlet</servlet-name>
+    <servlet-class>cn.ignai.hackathon.control.HealthServlet</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>HealthServlet</servlet-name>
+    <url-pattern>/api/health</url-pattern>
+  </servlet-mapping>
+
+  <servlet>
+    <servlet-name>RegistrationServlet</servlet-name>
+    <servlet-class>cn.ignai.hackathon.control.RegistrationServlet</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>RegistrationServlet</servlet-name>
+    <url-pattern>/api/public/events/*</url-pattern>
+  </servlet-mapping>
+
+  <servlet>
+    <servlet-name>AdminServlet</servlet-name>
+    <servlet-class>cn.ignai.hackathon.control.AdminServlet</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>AdminServlet</servlet-name>
+    <url-pattern>/api/admin/*</url-pattern>
+  </servlet-mapping>
+
+  <servlet>
+    <servlet-name>ProjectServlet</servlet-name>
+    <servlet-class>cn.ignai.hackathon.control.ProjectServlet</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>ProjectServlet</servlet-name>
+    <url-pattern>/api/projects/*</url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>ProjectServlet</servlet-name>
+    <url-pattern>/api/public/projects/*</url-pattern>
+  </servlet-mapping>
+</web-app>
