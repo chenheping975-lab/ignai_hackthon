@@ -7,7 +7,7 @@
 ## 当前状态
 
 - 前端首页已完成第一版视觉原型，沿用 IGNAI 官网的火炬、橙红渐变、暖纸底、黑色 CTA 和品牌水印。
-- 后端已提供 Java Web / Servlet / JSP / MySQL 的实训版工程骨架。
+- 后端已同步为 Spring Boot / MyBatis / MySQL 工程，当前已接入注册、登录与 JWT 返回，活动、报名、作品等 Controller 仍在补齐中。
 - 数据库、OpenAPI、概要设计、业务逻辑判断和研发 PDF 已整理到 `docs/`、`database/`、`api/`。
 - MVP 阶段不引入评委独立角色，不引入视频上传。
 
@@ -29,9 +29,18 @@ http://localhost:5173/
 后端编译检查：
 
 ```bash
-cd backend/java-web
-mvn -q -DskipTests package
+cd backend
+./mvnw -q -DskipTests package
 ```
+
+后端本地运行建议：
+
+```bash
+cd backend
+./mvnw spring-boot:run
+```
+
+> 当前仓库未提交 `application.properties`，首次运行前需要按本机 MySQL 配置补齐 `spring.datasource.*`，数据库名可使用 `database/schema.sql` 中的 `ignai_hackthon`。
 
 ## 官网与参考站
 
@@ -73,8 +82,8 @@ MVP 不包含：
 | 层级 | 方案 |
 | --- | --- |
 | 前端原型 | HTML / CSS / JavaScript |
-| 后端实训栈 | Java Web / Servlet / JSP |
-| 分层结构 | Control / Service / DAO / Model |
+| 后端实训栈 | Spring Boot 3 / MyBatis / Java 17 |
+| 分层结构 | Controller / Service / Mapper / POJO |
 | 数据库 | MySQL 8 |
 | 接口文档 | OpenAPI 3 |
 | 文件存储 | 本地文件备份，数据库保存 metadata |
@@ -85,17 +94,17 @@ MVP 不包含：
 | 服务 | 端口 / 路径 | 说明 |
 | --- | --- | --- |
 | 前端预览 | `5173` | 当前静态页面服务 |
-| Java Web | `8080` | Tomcat / Servlet 容器 |
+| Spring Boot API | `8080` | 默认后端服务端口 |
 | MySQL | `3306` | 业务数据库 |
 | API 前缀 | `/api` | 后端接口统一前缀 |
-| 文件目录 | `backend/java-web/src/main/webapp/uploads` | MVP 本地附件备份目录 |
+| 文件目录 | `backend/uploads` | MVP 本地附件备份目录，后续由后端配置落盘位置 |
 
 ## 目录结构
 
 ```text
 ignai_hackthon/
   frontend/                 # IGNAI 品牌风格前端原型
-  backend/java-web/          # Java Web 实训栈后端骨架
+  backend/                  # Spring Boot + MyBatis 后端工程
   database/schema.sql        # MySQL 8 建表脚本
   api/openapi.yaml           # OpenAPI 接口设计
   docs/                      # PRD、概要设计、详细设计、研发 PDF

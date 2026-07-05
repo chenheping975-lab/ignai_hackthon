@@ -23,7 +23,19 @@
         <a href="#showcase">作品</a>
         <a href="https://www.ignai.cn/" target="_blank" rel="noreferrer">官网</a>
       </nav>
-      <a class="header-cta" href="#apply">加入黑客松</a>
+      <div class="header-actions">
+        <div class="auth-widget" id="auth-widget" data-state="guest" aria-live="polite">
+          <a class="header-cta auth-guest" href="./login.html">登录</a>
+          <a class="outline-button auth-guest" href="./register.html">注册</a>
+          <div class="auth-authed auth-profile">
+            <span id="auth-role">参赛账号</span>
+            <strong id="auth-name">未登录</strong>
+          </div>
+          <button class="outline-button auth-authed" id="switch-account-button" type="button">切换账号</button>
+          <button class="header-cta auth-authed" id="logout-button" type="button">退出</button>
+        </div>
+        <a class="header-cta header-join" href="#apply">加入黑客松</a>
+      </div>
     </header>
 
     <main id="top">
@@ -203,15 +215,39 @@
           <p>
             管理平台要隐在活动体验后面：收报名、打标签、发邮件、收作品、开放评分、备份飞书，最后把作品和故事留下来。
           </p>
-          <div class="system-flow">
-            <span>报名</span>
-            <span>AI 标签</span>
-            <span>审核通知</span>
-            <span>作品提交</span>
-            <span>开放评分</span>
-            <span>飞书备份</span>
+          <div class="platform-grid">
+            <div class="system-flow">
+              <span>报名</span>
+              <span>AI 标签</span>
+              <span>审核通知</span>
+              <span>作品提交</span>
+              <span>开放评分</span>
+              <span>飞书备份</span>
+            </div>
+
+            <section class="demo-console" aria-label="黑客松平台交互原型">
+              <div class="demo-console-head">
+                <div>
+                  <span>Interactive Demo</span>
+                  <strong>参赛流程控制台</strong>
+                </div>
+                <small id="demo-session-label">未登录预览</small>
+              </div>
+              <div class="demo-tabs" role="tablist" aria-label="流程模块">
+                <button class="active" type="button" data-demo-tab="signup">报名</button>
+                <button type="button" data-demo-tab="project">作品</button>
+                <button type="button" data-demo-tab="rating">评分</button>
+                <button type="button" data-demo-tab="feishu">飞书</button>
+              </div>
+              <div class="demo-panel" id="demo-panel"></div>
+            </section>
           </div>
-          <a class="primary-button" href="https://www.ignai.cn/join" target="_blank" rel="noreferrer">加入 IGNAI</a>
+
+          <div class="apply-actions">
+            <button class="primary-button" id="submit-registration-button" type="button">提交报名 Demo</button>
+            <button class="outline-button" id="login-or-switch-button" type="button">登录 / 切换账号</button>
+            <p id="apply-feedback" role="status">登录后可提交报名；未连接后端时会进入本地 Demo 模式。</p>
+          </div>
         </div>
       </section>
     </main>
@@ -223,6 +259,7 @@
       <a href="./../docs/pdf/黑客松管理平台-研发说明书-v0.3.pdf">研发说明书</a>
     </footer>
 
+    <script src="./assets/js/api.js"></script>
     <script src="./assets/js/app.js"></script>
   </body>
 </html>
