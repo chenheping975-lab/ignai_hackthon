@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.csust.hackathonserver.mapper.RegistrationMembersMapper">
+
+    <resultMap id="BaseResultMap" type="com.csust.hackathonserver.pojo.RegistrationMembers">
+            <id property="id" column="id" />
+            <result property="registrationId" column="registration_id" />
+            <result property="name" column="name" />
+            <result property="role" column="role" />
+            <result property="phone" column="phone" />
+            <result property="email" column="email" />
+            <result property="skillsJson" column="skills_json" />
+            <result property="createdAt" column="created_at" />
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,registration_id,name,role,phone,email,
+        skills_json,created_at
+    </sql>
+</mapper>

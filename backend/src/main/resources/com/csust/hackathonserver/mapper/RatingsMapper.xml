@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.csust.hackathonserver.mapper.RatingsMapper">
+
+    <resultMap id="BaseResultMap" type="com.csust.hackathonserver.pojo.Ratings">
+            <id property="id" column="id" />
+            <result property="projectId" column="project_id" />
+            <result property="raterUserId" column="rater_user_id" />
+            <result property="raterKey" column="rater_key" />
+            <result property="sourceType" column="source_type" />
+            <result property="score" column="score" />
+            <result property="comment" column="comment" />
+            <result property="createdAt" column="created_at" />
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,project_id,rater_user_id,rater_key,source_type,score,
+        comment,created_at
+    </sql>
+</mapper>
