@@ -412,8 +412,6 @@ GET /api/public/projects?status=submitted&pageSize=2
         "tagline": "面向高校实训的课程 Agent 与作品沉淀平台。",
         "description": "项目详细介绍",
         "coverUrl": "./assets/img/local-global-embers.png",
-        "averageScore": 4.7,
-        "ratingCount": 128
       }
     ],
     "total": 1
@@ -441,8 +439,6 @@ public class ProjectVO {
     private String tagline;
     private String description;
     private String coverUrl;
-    private BigDecimal averageScore;
-    private Integer ratingCount;
 }
 ```
 

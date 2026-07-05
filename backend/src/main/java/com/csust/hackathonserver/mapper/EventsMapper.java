@@ -1,7 +1,9 @@
 package com.csust.hackathonserver.mapper;
 
 import com.csust.hackathonserver.pojo.Events;
+import jdk.jfr.Event;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Select;
 
 /**
 * @author 21201
@@ -12,6 +14,8 @@ import org.apache.ibatis.annotations.Mapper;
 @Mapper
 public interface EventsMapper {
 
+    @Select("select * from events where status = 'active' order by created_at desc limit 1")
+    Events getCurrentEvent();
 }
 
 

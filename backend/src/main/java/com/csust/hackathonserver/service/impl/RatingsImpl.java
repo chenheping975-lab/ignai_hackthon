@@ -1,8 +1,9 @@
 package com.csust.hackathonserver.service.impl;
 
 import com.csust.hackathonserver.service.ProjectsService;
+import com.csust.hackathonserver.service.RatingsServices;
 import org.springframework.stereotype.Service;
 
 @Service
-public class RatingsImpl implements ProjectsService {
+public class RatingsImpl implements RatingsServices {
 }
