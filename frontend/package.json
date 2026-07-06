@@ -1,0 +1,14 @@
+{
+  "name": "ignai-skillathon-frontend",
+  "private": true,
+  "version": "0.3.0",
+  "description": "IGNAI AI Skillathon 静态前端原型（含按钮自动化测试）",
+  "scripts": {
+    "test": "playwright test",
+    "test:headed": "playwright test --headed",
+    "test:report": "playwright show-report"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.45.0"
+  }
+}

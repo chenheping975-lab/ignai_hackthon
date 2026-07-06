@@ -11,6 +11,21 @@ python3 -m http.server 5173
 
 打开 `http://localhost:5173/`。
 
+## 自动化测试
+
+按钮 / 交互自动化测试基于 [Playwright Test](https://playwright.dev)，覆盖主题切换、hero CTA、nav 锚点、demo tabs、评分、提交流程、Reveal 入场、跑马灯 11 个用例。
+
+```bash
+cd frontend
+npm install                 # 首次：装 @playwright/test
+npx playwright install chromium   # 首次：下载 chromium headless
+npm test                    # 跑全部用例（headless）
+npm run test:headed         # 有头模式，便于肉眼观察
+npm run test:report         # 打开 HTML 报告
+```
+
+Playwright 的 `webServer` 会自动拉起 `python3 -m http.server 5173`，无需手动启动。
+
 ## 页面内容
 
 - 首页活动叙事和 IGNAI 官网友链。
@@ -29,6 +44,17 @@ python3 -m http.server 5173
 - 后端补齐后，可在控制台设置 `localStorage.ignai_enable_public_api = "1"`、`localStorage.ignai_enable_registration_api = "1"` 打开对应联调。
 
 ## 更新日志
+
+### v0.3.0 — 2026-07-06
+
+新增按钮 / 交互自动化测试，零侵入业务代码。
+
+- 引入 Playwright Test（`@playwright/test`）作为 devDependency，新增 `package.json`、`playwright.config.ts`、`.gitignore`、`TASKS/` 目录。
+- `tests/buttons.spec.ts` 覆盖 11 个用例：页面初始加载、主题切换 + localStorage 持久化、hero CTA 滚动、nav 锚点、demo-tabs 切换 + 动画、评分按钮、未登录提交跳转、Reveal 入场、跑马灯拼接。
+- `playwright.config.ts` 内置 webServer，自动拉起静态服务；强制 `colorScheme: 'dark'` 让预闪脚本稳定走 dark 分支。
+- README 增加测试运行说明（`npm test` / `npm run test:headed` / `npm run test:report`）。
+
+涉及文件：`package.json`、`playwright.config.ts`、`.gitignore`、`tests/buttons.spec.ts`、`TASKS/button-automated-test.md`、`README.md`。
 
 ### v0.2.0 — 2026-07-06
 
