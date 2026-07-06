@@ -93,9 +93,8 @@ const demoTabs = {
           </select>
         </label>
         <div class="demo-row">
-          <strong>AI 整理</strong>
-          <span>提交后生成技能标签、组队摘要和审核辅助信息。</span>
-          <small>可编辑</small>
+          <strong>报名摘要</strong>
+          <span>提交后会自动整理一份摘要，方便现场签到和组队。</span>
         </div>
       </form>
     `,
@@ -106,17 +105,14 @@ const demoTabs = {
       <div class="demo-row">
         <strong>作品资料</strong>
         <span>项目标题、简介、Demo 链接、代码链接、PPT / HTML / MP3 / 图片附件。</span>
-        <small>无视频</small>
       </div>
       <div class="demo-row">
-        <strong>提交状态</strong>
-        <span id="project-demo-status">等待队长提交，截止后自动锁定。</span>
-        <small>draft</small>
+        <strong>提交节奏</strong>
+        <span id="project-demo-status">由队长在截止前提交，截止后自动锁定。</span>
       </div>
       <div class="demo-row">
-        <strong>曝光页面</strong>
-        <span>提交后进入作品展示页，支持赛道筛选、评分和赛后回看。</span>
-        <small>public</small>
+        <strong>展示页</strong>
+        <span>提交后作品进入展示页，支持赛道筛选、评分和赛后回看。</span>
       </div>
     `,
   },
@@ -124,11 +120,10 @@ const demoTabs = {
     title: "评分",
     html: `
       <div class="demo-row">
-        <strong>开放评分</strong>
-        <span>不设置独立评委身份，参赛者、现场观众或公开访客按规则评分。</span>
-        <small>1-5</small>
+        <strong>谁可以评分</strong>
+        <span>不设独立评委，参赛者、现场观众和访客都可以按规则评分。</span>
       </div>
-      <div class="score-buttons" aria-label="评分 Demo">
+      <div class="score-buttons" aria-label="评分预览">
         <button type="button" data-score="1">1</button>
         <button type="button" data-score="2">2</button>
         <button type="button" data-score="3">3</button>
@@ -137,28 +132,7 @@ const demoTabs = {
       </div>
       <div class="demo-row">
         <strong>当前样例</strong>
-        <span id="score-demo-text">选择一个分数，模拟公开评分记录。</span>
-        <small>live</small>
-      </div>
-    `,
-  },
-  feishu: {
-    title: "飞书",
-    html: `
-      <div class="demo-row">
-        <strong>报名 Base</strong>
-        <span>报名信息本地保存，同时可同步到飞书 Base 作为协作视图。</span>
-        <small>sync</small>
-      </div>
-      <div class="demo-row">
-        <strong>附件备份</strong>
-        <span>附件原件本地备份，飞书可保存 Drive 文件或 metadata。</span>
-        <small>drive</small>
-      </div>
-      <div class="demo-row">
-        <strong>失败重试</strong>
-        <span>同步失败不阻断主流程，进入队列等待管理员重试。</span>
-        <small>retry</small>
+        <span id="score-demo-text">选一个分数，预览一下评分效果。</span>
       </div>
     `,
   },
@@ -217,8 +191,8 @@ function renderAuthState() {
   widget?.setAttribute("data-state", "guest");
   if (name) name.textContent = "未登录";
   if (role) role.textContent = "访客预览";
-  if (sessionLabel) sessionLabel.textContent = "未登录预览";
-  if (loginSwitchButton) loginSwitchButton.textContent = "登录 / 切换账号";
+  if (sessionLabel) sessionLabel.textContent = "游客预览";
+  if (loginSwitchButton) loginSwitchButton.textContent = "登录";
 }
 
 async function logout({ redirect = false } = {}) {
@@ -255,7 +229,7 @@ function bindBusinessEntryLinks() {
       event.preventDefault();
       document.querySelector("#apply")?.scrollIntoView({ behavior: "smooth", block: "start" });
       if (!isLoggedIn()) {
-        setFeedback("请先登录或注册，再提交报名。当前页面可继续预览流程。", "error");
+        setFeedback("先登录或注册账号，就能完成报名。", "error");
       }
     });
   });
@@ -397,10 +371,10 @@ function getDemoRegistrationPayload(event, user) {
 
 async function submitRegistration() {
   const button = document.getElementById("submit-registration-button");
-  const originalText = button?.textContent || "提交报名 Demo";
+  const originalText = button?.textContent || "提交报名";
 
   if (!isLoggedIn()) {
-    setFeedback("请先登录或注册，再提交报名。", "error");
+    setFeedback("先登录或注册账号，就能完成报名。", "error");
     window.location.href = "./login.html";
     return;
   }
@@ -422,18 +396,18 @@ async function submitRegistration() {
     localStorage.setItem(DEMO_REGISTRATION_KEY, JSON.stringify(payload));
 
     if (!ENABLE_REGISTRATION_API) {
-      button.textContent = "已保存 Demo 报名";
-      setFeedback("后端报名接口仍在补齐，已保存本地 Demo 状态。", "success");
+      button.textContent = "已暂存报名";
+      setFeedback("报名信息已暂存，正式提交会在你登录后完成。", "success");
       return;
     }
 
     try {
       await RegistrationApi.submit(payload);
       button.textContent = "已提交报名";
-      setFeedback("报名已提交到后端，等待管理员审核。", "success");
+      setFeedback("报名已提交，我们会在审核通过后给你发通知。", "success");
     } catch (error) {
-      button.textContent = "已保存 Demo 报名";
-      setFeedback(`后端报名接口暂不可用，已保存本地 Demo 状态：${error.message}`, "success");
+      button.textContent = "已暂存报名";
+      setFeedback("报名暂存成功，但还没送到后端，稍后再试一次。", "success");
     }
   } finally {
     button?.removeAttribute("aria-busy");

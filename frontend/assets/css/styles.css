@@ -1063,6 +1063,11 @@ html.dark .hero-gradient {
   gap: 10px;
 }
 
+/* 4 格 system-flow 用 2x2，与 6 格区分 */
+.system-flow:has(span:nth-child(4):last-child) {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
 .system-flow span {
   display: flex;
   align-items: center;
@@ -1118,7 +1123,7 @@ html.dark .hero-gradient {
 
 .demo-tabs {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 8px;
   margin-bottom: 14px;
 }

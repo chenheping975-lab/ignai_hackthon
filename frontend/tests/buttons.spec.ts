@@ -101,12 +101,12 @@ test("nav 锚点：点击「流程」滚动到 #journey", async ({ page }) => {
 /* -----------------------------------------------
  * 7. demo-tabs 切换
  * --------------------------------------------- */
-test("demo-tabs：4 个 tab 切换面板内容并触发动画", async ({ page }) => {
+test("demo-tabs：3 个 tab 切换面板内容并触发动画", async ({ page }) => {
   await gotoHome(page);
   // 先滚到面板，确保 reveal 完成
   await page.locator("#apply").scrollIntoViewIfNeeded();
 
-  const tabs = ["signup", "project", "rating", "feishu"] as const;
+  const tabs = ["signup", "project", "rating"] as const;
   for (const tab of tabs) {
     const btn = page.locator(`[data-demo-tab="${tab}"]`);
     await btn.click();
