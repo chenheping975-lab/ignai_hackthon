@@ -1,7 +1,65 @@
 const ribbons = document.querySelector(".signal-strip div");
 
 if (ribbons) {
+  // 首尾拼接无空隙：把内容复制一份，让 marquee 平移 -50% 即可无缝循环
   ribbons.innerHTML += ribbons.innerHTML;
+}
+
+/* ============================================================
+   主题切换（dark / light，localStorage 持久化）
+   ============================================================ */
+
+const THEME_KEY = "ignai-theme";
+
+function getStoredTheme() {
+  try {
+    return localStorage.getItem(THEME_KEY);
+  } catch {
+    return null;
+  }
+}
+
+function getSystemTheme() {
+  return window.matchMedia &&
+    window.matchMedia("(prefers-color-scheme: light)").matches
+    ? "light"
+    : "dark";
+}
+
+function applyTheme(theme) {
+  const root = document.documentElement;
+  root.classList.remove("dark", "light");
+  root.classList.add(theme === "light" ? "light" : "dark");
+  try {
+    localStorage.setItem(THEME_KEY, theme);
+  } catch {}
+  const toggle = document.getElementById("theme-toggle");
+  if (toggle) {
+    toggle.setAttribute(
+      "aria-label",
+      theme === "dark" ? "切换到亮色模式" : "切换到暗色模式"
+    );
+  }
+}
+
+function initThemeToggle() {
+  const toggle = document.getElementById("theme-toggle");
+  if (!toggle) return;
+  // 同步当前状态到按钮 label（首次进入时）
+  const current = getStoredTheme() || getSystemTheme();
+  applyTheme(current === "light" ? "light" : "dark");
+  toggle.addEventListener("click", () => {
+    const isDark = document.documentElement.classList.contains("dark");
+    applyTheme(isDark ? "light" : "dark");
+  });
+  // 跟随系统变化（仅当用户未手动选择时）
+  window
+    .matchMedia("(prefers-color-scheme: light)")
+    .addEventListener?.("change", (event) => {
+      if (!getStoredTheme()) {
+        applyTheme(event.matches ? "light" : "dark");
+      }
+    });
 }
 
 const DEMO_REGISTRATION_KEY = "ignai_demo_registration";
@@ -244,7 +302,11 @@ function renderDemoTab(tabName) {
   });
 
   if (panel) {
+    panel.classList.remove("is-switching");
+    // 强制重排，让动画重新触发
+    void panel.offsetWidth;
     panel.innerHTML = config.html;
+    panel.classList.add("is-switching");
   }
 
   hydrateDemoFromStorage();
@@ -382,27 +444,57 @@ async function submitRegistration() {
 }
 
 function bindRevealMotion() {
-  const timelineItems = document.querySelectorAll(".timeline-item");
+  const items = document.querySelectorAll("[data-reveal]");
+  if (!items.length) return;
+
+  // 支持 reduced-motion：直接显示
+  const prefersReduced = window.matchMedia(
+    "(prefers-reduced-motion: reduce)"
+  ).matches;
+  if (prefersReduced) {
+    items.forEach((item) => item.classList.add("is-visible"));
+    return;
+  }
+
   const observer = new IntersectionObserver(
     (entries) => {
       entries.forEach((entry) => {
         if (entry.isIntersecting) {
           entry.target.classList.add("is-visible");
+          observer.unobserve(entry.target);
         }
       });
     },
-    { threshold: 0.35 },
+    { threshold: 0.18, rootMargin: "0px 0px -8% 0px" }
   );
 
-  timelineItems.forEach((item) => observer.observe(item));
+  items.forEach((item) => observer.observe(item));
+}
+
+function bindCardHoverGlow() {
+  // 卡片鼠标位置 → CSS 变量 --mx / --my，触发 radial 光晕跟随
+  const cards = document.querySelectorAll(
+    ".card-grid article, .action-list article, .project-card"
+  );
+  cards.forEach((card) => {
+    card.addEventListener("pointermove", (event) => {
+      const rect = card.getBoundingClientRect();
+      const x = ((event.clientX - rect.left) / rect.width) * 100;
+      const y = ((event.clientY - rect.top) / rect.height) * 100;
+      card.style.setProperty("--mx", `${x}%`);
+      card.style.setProperty("--my", `${y}%`);
+    });
+  });
 }
 
 document.addEventListener("DOMContentLoaded", () => {
+  initThemeToggle();
   renderAuthState();
   bindAuthActions();
   bindBusinessEntryLinks();
   bindDemoTabs();
   bindRevealMotion();
+  bindCardHoverGlow();
   renderDemoTab("signup");
   hydrateCurrentEvent();
   hydrateShowcase();
