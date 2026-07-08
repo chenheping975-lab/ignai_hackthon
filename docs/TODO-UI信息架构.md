@@ -1,8 +1,8 @@
 # TODO - UI 信息架构与交互原型梳理
 
-版本：v0.1
+版本：v0.2
 日期：2026-07-08
-状态：进行中
+状态：已完成静态 MVP
 
 ## 任务体量判断
 
@@ -19,7 +19,26 @@
 | 2. 创建 UI 梳理 TODO 并记录任务体量 | 已完成 | 本文件作为本轮任务看板。 |
 | 3. 新增后台管理 UI 与赛事预览 UI 梳理文档 | 已完成 | 已新增 `docs/08-后台管理与赛事预览UI梳理.md`。 |
 | 4. 同步相关索引与迭代文档 | 已完成 | 已更新 README、设计方向、后台规划、文件夹系统和迭代计划。 |
-| 5. 校验、提交并推送 | 已完成 | `git diff --check` 通过；`backend ./mvnw -q -DskipTests package` 通过；`frontend npm test -- --reporter=list` 11 项通过。本轮修改将提交并推送到 `main`。 |
+| 5. 校验、提交并推送 | 已完成 | `git diff --check` 通过；`backend ./mvnw -q -DskipTests package` 通过；`frontend npm test -- --reporter=list` 15 项通过。本轮修改将提交并推送到 `main`。 |
+
+## MVP 原型实现清单
+
+| 项目 | 状态 | 文件 |
+| --- | --- | --- |
+| `/root/` 后台页面入口 | 已完成 | `frontend/root/index.html` |
+| 后台视觉和布局 | 已完成 | `frontend/root/root.css` |
+| 后台 mock 交互 | 已完成 | `frontend/root/root.js` |
+| 后台自动化测试 | 已完成 | `frontend/tests/root-admin.spec.ts` |
+| 前端说明更新 | 已完成 | `frontend/README.md` |
+
+## MVP 覆盖交互
+
+- root 初始化：填写创始人邮箱和 root 密码，更新 root 状态。
+- 概览：查看报名、待审核、作品、点赞、AI 待处理等指标。
+- 活动管理：新增报名问题并同步参赛者表单预览。
+- 报名管理：筛选报名，打开详情抽屉，运行 AI 初筛，审核通过并生成邮件草稿。
+- 项目看板：按状态筛选，项目公开 / 精选切换。
+- 赛事预览：按身份和赛事阶段切换，预览下一步行动和作品展示。
 
 ## 待确认点
 

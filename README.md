@@ -7,6 +7,7 @@
 ## 当前状态
 
 - 前端首页已完成第一版视觉原型，沿用 IGNAI 官网的火炬、橙红渐变、暖纸底、黑色 CTA 和品牌水印。
+- `/root/` 后台管理静态 MVP 已完成，支持概览、活动管理、报名管理、项目看板、赛事预览和邮件中心的 mock 交互。
 - 后端已同步为 Spring Boot / MyBatis / MySQL 工程，当前已接入注册、登录、当前活动和公开作品列表；后台管理接口已完成 v0.4 规划，待实现。
 - 数据库、OpenAPI、概要设计、业务逻辑判断和研发 PDF 已整理到 `docs/`、`database/`、`api/`。
 - MVP 阶段不引入评委独立角色，不引入视频上传。
@@ -24,6 +25,7 @@ python3 -m http.server 5173
 
 ```text
 http://localhost:5173/
+http://localhost:5173/root/
 ```
 
 后端编译检查：

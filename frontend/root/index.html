@@ -1,0 +1,260 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>IGNAI Skillathon Root Admin</title>
+    <meta name="description" content="IGNAI AI Skillathon 后台管理 MVP 原型" />
+    <link rel="icon" href="../assets/img/ignai-torch.png" />
+    <link rel="stylesheet" href="./root.css" />
+  </head>
+  <body>
+    <div class="admin-shell">
+      <aside class="sidebar">
+        <a class="admin-brand" href="./" aria-label="IGNAI Skillathon Admin">
+          <img src="../assets/img/ignai-logo-horizontal.webp" alt="IGNAI" />
+          <span>Skillathon Admin</span>
+        </a>
+        <nav class="side-nav" aria-label="后台导航">
+          <button class="active" type="button" data-admin-view="dashboard">概览</button>
+          <button type="button" data-admin-view="event">活动管理</button>
+          <button type="button" data-admin-view="registrations">报名管理</button>
+          <button type="button" data-admin-view="projects">项目看板</button>
+          <button type="button" data-admin-view="preview">赛事预览</button>
+          <button type="button" data-admin-view="mail">邮件中心</button>
+        </nav>
+        <div class="side-status">
+          <span>Root</span>
+          <strong id="root-status">未初始化</strong>
+        </div>
+      </aside>
+
+      <div class="workspace">
+        <header class="topbar">
+          <div>
+            <span class="caption">当前活动</span>
+            <select id="event-switcher" aria-label="当前活动">
+              <option>IGNAI AI Skillathon · 长沙</option>
+            </select>
+          </div>
+          <div class="topbar-actions">
+            <span class="sync-chip" id="sync-chip">飞书同步：待配置</span>
+            <a class="ghost-button" href="../index.html" target="_blank" rel="noreferrer">打开前台</a>
+          </div>
+        </header>
+
+        <main class="content">
+          <section class="admin-view active" id="dashboard" aria-labelledby="dashboard-title">
+            <div class="page-head">
+              <div>
+                <span class="caption">Dashboard</span>
+                <h1 id="dashboard-title">赛事运营总览</h1>
+                <p>先把关键事项放在一屏：报名、审核、AI 初筛、邮件、作品公开和同步异常。</p>
+              </div>
+              <button class="primary-button" type="button" data-admin-view-shortcut="preview">预览赛事页</button>
+            </div>
+
+            <div class="root-setup">
+              <div>
+                <span class="caption">Root setup</span>
+                <strong>创始人邮箱与 root 密码</strong>
+                <p>静态 MVP 只保存到本机浏览器，后端接入后改走 `/api/root/bootstrap`。</p>
+              </div>
+              <form id="root-setup-form">
+                <input id="root-email" type="email" placeholder="founder@ignai.cn" aria-label="创始人邮箱" />
+                <input id="root-password" type="password" placeholder="root 密码" aria-label="root 密码" />
+                <button type="submit">初始化</button>
+              </form>
+            </div>
+
+            <div class="metric-grid" id="metric-grid"></div>
+
+            <div class="dashboard-grid">
+              <section class="panel">
+                <div class="panel-head">
+                  <span class="caption">Today</span>
+                  <h2>今日待处理</h2>
+                </div>
+                <ul class="task-list" id="today-tasks"></ul>
+              </section>
+              <section class="panel">
+                <div class="panel-head">
+                  <span class="caption">Timeline</span>
+                  <h2>赛事窗口</h2>
+                </div>
+                <div class="event-rail">
+                  <span class="done">报名开放</span>
+                  <span class="active">审核中</span>
+                  <span>作品提交</span>
+                  <span>公开展示</span>
+                </div>
+              </section>
+            </div>
+          </section>
+
+          <section class="admin-view" id="event" aria-labelledby="event-title">
+            <div class="page-head">
+              <div>
+                <span class="caption">Event CMS</span>
+                <h1 id="event-title">活动管理与报名问卷</h1>
+                <p>后台配置活动信息、报名窗口和自定义问题；右侧实时看参赛者表单预览。</p>
+              </div>
+              <button class="primary-button" id="save-event-button" type="button">保存配置</button>
+            </div>
+
+            <div class="split-grid">
+              <section class="panel">
+                <div class="panel-head">
+                  <span class="caption">Fields</span>
+                  <h2>报名问题</h2>
+                </div>
+                <div class="field-list" id="field-list"></div>
+                <button class="add-button" id="add-field-button" type="button">新增问题</button>
+              </section>
+
+              <section class="panel">
+                <div class="panel-head">
+                  <span class="caption">Participant Preview</span>
+                  <h2>参赛者看到的表单</h2>
+                </div>
+                <form class="preview-form" id="form-preview"></form>
+              </section>
+            </div>
+          </section>
+
+          <section class="admin-view" id="registrations" aria-labelledby="registrations-title">
+            <div class="page-head">
+              <div>
+                <span class="caption">Registrations</span>
+                <h1 id="registrations-title">报名管理</h1>
+                <p>查看报名原文、AI 摘要、风险判断，并从详情抽屉里完成审核和邮件草稿。</p>
+              </div>
+              <button class="primary-button" id="batch-ai-button" type="button">批量 AI 初筛</button>
+            </div>
+
+            <div class="filter-bar">
+              <select id="registration-status-filter" aria-label="报名状态筛选">
+                <option value="all">全部状态</option>
+                <option value="pending">待审核</option>
+                <option value="approved">已通过</option>
+                <option value="waitlist">候补</option>
+                <option value="rejected">已拒绝</option>
+              </select>
+              <select id="registration-track-filter" aria-label="赛道筛选">
+                <option value="all">全部赛道</option>
+                <option value="Agent 工具">Agent 工具</option>
+                <option value="教育实训">教育实训</option>
+                <option value="内容生产">内容生产</option>
+              </select>
+              <input id="registration-search" type="search" placeholder="搜索姓名、队伍、标签" aria-label="搜索报名" />
+            </div>
+
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>姓名 / 队伍</th>
+                    <th>赛道</th>
+                    <th>AI 标签</th>
+                    <th>风险</th>
+                    <th>状态</th>
+                  </tr>
+                </thead>
+                <tbody id="registration-table"></tbody>
+              </table>
+            </div>
+          </section>
+
+          <section class="admin-view" id="projects" aria-labelledby="projects-title">
+            <div class="page-head">
+              <div>
+                <span class="caption">Projects</span>
+                <h1 id="projects-title">项目看板</h1>
+                <p>管理作品附件、公开状态、精选标记和前台排序。MVP 不出现视频上传。</p>
+              </div>
+              <button class="primary-button" type="button" data-admin-view-shortcut="preview">查看公开展示</button>
+            </div>
+
+            <div class="filter-bar">
+              <select id="project-status-filter" aria-label="项目状态筛选">
+                <option value="all">全部状态</option>
+                <option value="submitted">已提交</option>
+                <option value="published">已公开</option>
+                <option value="locked">已锁定</option>
+              </select>
+              <select id="project-sort" aria-label="项目排序">
+                <option value="votes">按票数</option>
+                <option value="latest">按最新</option>
+                <option value="track">按赛道</option>
+              </select>
+            </div>
+
+            <div class="project-board" id="project-board"></div>
+          </section>
+
+          <section class="admin-view" id="preview" aria-labelledby="preview-title">
+            <div class="page-head">
+              <div>
+                <span class="caption">Event Preview</span>
+                <h1 id="preview-title">整体赛事预览</h1>
+                <p>按身份和阶段切换，预览访客、参赛者、队长看到的下一步行动。</p>
+              </div>
+              <a class="primary-button" href="../index.html#apply" target="_blank" rel="noreferrer">打开真实前台</a>
+            </div>
+
+            <div class="preview-controls">
+              <label>预览身份
+                <select id="preview-role">
+                  <option value="guest">访客</option>
+                  <option value="loggedIn">已登录未报名</option>
+                  <option value="pending">已报名待审核</option>
+                  <option value="approved">已通过参赛者</option>
+                  <option value="leader">队长</option>
+                  <option value="submitted">已提交项目</option>
+                </select>
+              </label>
+              <label>赛事阶段
+                <select id="preview-phase">
+                  <option value="registration">报名开放</option>
+                  <option value="review">审核中</option>
+                  <option value="submission">提交中</option>
+                  <option value="showcase">展示中</option>
+                </select>
+              </label>
+            </div>
+
+            <div class="event-preview" id="event-preview-panel"></div>
+          </section>
+
+          <section class="admin-view" id="mail" aria-labelledby="mail-title">
+            <div class="page-head">
+              <div>
+                <span class="caption">Mail Agent</span>
+                <h1 id="mail-title">邮件中心</h1>
+                <p>AI 可以生成草稿，但必须由管理员编辑确认后发送。</p>
+              </div>
+              <button class="primary-button" id="send-mail-button" type="button">确认发送</button>
+            </div>
+            <section class="panel">
+              <div class="panel-head">
+                <span class="caption">Draft</span>
+                <h2>个性化邮件草稿</h2>
+              </div>
+              <input id="mail-subject" type="text" aria-label="邮件标题" />
+              <textarea id="mail-body" rows="12" aria-label="邮件正文"></textarea>
+            </section>
+          </section>
+        </main>
+      </div>
+    </div>
+
+    <aside class="detail-drawer" id="registration-drawer" aria-live="polite">
+      <button class="drawer-close" id="drawer-close" type="button" aria-label="关闭详情">关闭</button>
+      <div id="drawer-content"></div>
+    </aside>
+
+    <div class="toast" id="toast" role="status"></div>
+
+    <script src="./root.js"></script>
+  </body>
+</html>
