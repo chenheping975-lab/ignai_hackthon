@@ -27,5 +27,4 @@ public class JwtUtil {
 
         return Long.valueOf(userId);
     }
-
 }
