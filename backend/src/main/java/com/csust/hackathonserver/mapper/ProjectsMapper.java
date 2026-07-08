@@ -2,6 +2,9 @@ package com.csust.hackathonserver.mapper;
 
 import com.csust.hackathonserver.pojo.Projects;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Select;
+
+import java.util.List;
 
 /**
 * @author 21201
@@ -11,7 +14,8 @@ import org.apache.ibatis.annotations.Mapper;
 */
 @Mapper
 public interface ProjectsMapper {
-
+    @Select("select * from projects where status=#{status} limit 2")
+    List<Projects> getPublicProjects(String status, Integer pageSize);
 }
 
 
