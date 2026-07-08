@@ -19,9 +19,9 @@ function handleLogout() {
       <img src="/img/ignai-logo-horizontal.webp" alt="IGNAI" />
     </router-link>
     <nav class="nav-links" aria-label="主导航">
-      <a href="#events">活动</a>
-      <a href="#spirit">精神</a>
-      <router-link to="/events">活动列表</router-link>
+      <router-link to="/events">活动</router-link>
+      <router-link to="/projects">作品</router-link>
+      <router-link v-if="auth.isLoggedIn" to="/my/registrations">我的报名</router-link>
       <a href="https://www.ignai.cn/" target="_blank" rel="noreferrer">官网</a>
     </nav>
     <div class="header-actions">
@@ -31,10 +31,12 @@ function handleLogout() {
           <router-link class="outline-button" to="/register">注册</router-link>
         </template>
         <template v-else>
-          <div class="auth-profile">
-            <span>参赛账号</span>
-            <strong>{{ auth.user?.name || '未登录' }}</strong>
-          </div>
+          <router-link class="header-cta" to="/my/registrations">
+            <div class="auth-profile">
+              <span>参赛账号</span>
+              <strong>{{ auth.user?.name || '已登录' }}</strong>
+            </div>
+          </router-link>
           <button class="outline-button" @click="auth.logout(); router.push('/')">退出</button>
         </template>
       </div>

@@ -1,9 +1,10 @@
 <script setup>
 import { ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 
 const router = useRouter()
+const route = useRoute()
 const auth = useAuthStore()
 
 const account = ref('')
@@ -22,7 +23,8 @@ async function handleLogin() {
     await auth.login({ account: account.value, password: password.value })
     message.value = '登录成功'
     messageType.value = 'success'
-    setTimeout(() => router.push('/'), 800)
+    const redirect = typeof route.query.redirect === 'string' ? route.query.redirect : '/'
+    setTimeout(() => router.push(redirect), 600)
   } catch (e) {
     message.value = e.message
     messageType.value = 'error'
