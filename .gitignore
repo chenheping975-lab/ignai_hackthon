@@ -13,3 +13,6 @@ tmp/
 .gstack/
 .npm-cache/
 frontend/.npm-cache/
+
+# 数据库配置（含敏感信息，不要提交）
+**/src/main/resources/application.properties

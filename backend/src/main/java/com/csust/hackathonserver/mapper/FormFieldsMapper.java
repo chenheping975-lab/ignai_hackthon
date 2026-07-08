@@ -2,6 +2,10 @@ package com.csust.hackathonserver.mapper;
 
 import com.csust.hackathonserver.pojo.FormFields;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.Select;
+
+import java.util.List;
 
 /**
 * @author 21201
@@ -12,6 +16,8 @@ import org.apache.ibatis.annotations.Mapper;
 @Mapper
 public interface FormFieldsMapper {
 
+    @Select("select * from form_fields where event_id = #{eventId} and target_type = #{target} and enabled = 1 order by sort_order")
+    List<FormFields> findByEventIdAndTarget(@Param("eventId") Long eventId, @Param("target") String target);
 }
 
 

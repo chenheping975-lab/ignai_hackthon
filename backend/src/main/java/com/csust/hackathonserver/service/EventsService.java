@@ -8,8 +8,13 @@ import org.springframework.stereotype.Service;
 public interface EventsService {
     Events getCurrentEvent();
 
-    /**
-     * 分页查询活动列表
-     */
     PageInfo<Events> listEvents(int page, int pageSize);
+
+    Events findById(Long id);
+
+    int insert(Events event);
+
+    int update(Events event);
+
+    int updateWindows(Events event);
 }

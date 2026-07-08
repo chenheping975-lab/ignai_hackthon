@@ -6,6 +6,8 @@ import com.csust.hackathonserver.service.RegistrationsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class RegistrationsImpl implements RegistrationsService {
 
@@ -21,5 +23,35 @@ public class RegistrationsImpl implements RegistrationsService {
     @Override
     public Registrations getByEventIdAndUserId(Long eventId, Long userId) {
         return registrationsMapper.getByEventIdAndUserId(eventId, userId);
+    }
+
+    @Override
+    public int countAll() {
+        return registrationsMapper.countAll();
+    }
+
+    @Override
+    public int countByStatus(String status) {
+        return registrationsMapper.countByStatus(status);
+    }
+
+    @Override
+    public List<Registrations> findAll() {
+        return registrationsMapper.findAll();
+    }
+
+    @Override
+    public List<Registrations> findByStatus(String status) {
+        return registrationsMapper.findByStatus(status);
+    }
+
+    @Override
+    public Registrations findById(Long id) {
+        return registrationsMapper.findById(id);
+    }
+
+    @Override
+    public int updateStatus(Long id, String status, String note) {
+        return registrationsMapper.updateStatus(id, status, note);
     }
 }

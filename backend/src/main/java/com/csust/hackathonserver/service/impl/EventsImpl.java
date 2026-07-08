@@ -16,8 +16,8 @@ public class EventsImpl implements EventsService {
     private EventsMapper eventsMapper;
 
     @Override
-    public Events getCurrentEvent(){
-         return eventsMapper.getCurrentEvent();
+    public Events getCurrentEvent() {
+        return eventsMapper.getCurrentEvent();
     }
 
     @Override
@@ -25,5 +25,25 @@ public class EventsImpl implements EventsService {
         PageHelper.startPage(page, pageSize);
         List<Events> list = eventsMapper.findAll();
         return new PageInfo<>(list);
+    }
+
+    @Override
+    public Events findById(Long id) {
+        return eventsMapper.findById(id);
+    }
+
+    @Override
+    public int insert(Events event) {
+        return eventsMapper.insert(event);
+    }
+
+    @Override
+    public int update(Events event) {
+        return eventsMapper.update(event);
+    }
+
+    @Override
+    public int updateWindows(Events event) {
+        return eventsMapper.updateWindows(event);
     }
 }

@@ -3,16 +3,24 @@ package com.csust.hackathonserver.service;
 import com.csust.hackathonserver.pojo.Registrations;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public interface RegistrationsService {
 
-    /**
-     * 提交报名
-     */
     Registrations submitRegistration(Registrations registration);
 
-    /**
-     * 根据活动ID和用户ID查询报名记录（防重复报名）
-     */
     Registrations getByEventIdAndUserId(Long eventId, Long userId);
+
+    int countAll();
+
+    int countByStatus(String status);
+
+    List<Registrations> findAll();
+
+    List<Registrations> findByStatus(String status);
+
+    Registrations findById(Long id);
+
+    int updateStatus(Long id, String status, String note);
 }
