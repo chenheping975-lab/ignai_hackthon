@@ -59,8 +59,16 @@ export const AuthApi = {
 
 export const EventApi = {
   current: () => request('/public/events/current'),
+  detail: (eventId) => request(`/public/events/${eventId}`),
   tracks: (eventId) => request(`/public/events/${eventId}/tracks`),
+  formFields: (eventId, targetType = 'registration') => request(`/public/events/${eventId}/form-fields?targetType=${targetType}`),
   list: (page = 1, pageSize = 6) => request(`/public/events?page=${page}&pageSize=${pageSize}`),
+}
+
+export const AdminApi = {
+  currentEventConfig: () => request('/admin/events/current/config'),
+  eventConfig: (eventId) => request(`/admin/events/${eventId}/config`),
+  saveEventConfig: (eventId, data) => request(`/admin/events/${eventId}/config`, { method: 'PUT', body: data }),
 }
 
 export const RegistrationApi = {
