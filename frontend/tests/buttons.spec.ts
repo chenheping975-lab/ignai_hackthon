@@ -61,7 +61,8 @@ test("nav 锚点：点击「活动」滚动到活动列表", async ({ page }) =>
 
 test("首页活动卡片：进入单场活动详情", async ({ page }) => {
   await gotoHome(page);
-  await expect(page.locator(".event-card")).toHaveCount(2);
+  await expect(page.locator(".event-card")).toHaveCount(3);
+  await expect(page.locator(".event-card").first().getByRole("link", { name: "作品平台" })).toHaveCount(0);
   await page.locator(".event-card").first().getByRole("link", { name: "进入活动" }).click();
   await expect(page).toHaveURL(/event\.html\?id=ignai-ai-skillathon/);
   await expect(page.locator("#event-title")).toContainText("IGNAI AI Skillathon");

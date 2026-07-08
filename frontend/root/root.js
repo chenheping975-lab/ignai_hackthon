@@ -94,6 +94,34 @@ const state = {
       answers: ["随便", "不知道", "111"],
       email: "unknown@example.com",
     },
+    {
+      id: 5,
+      name: "苏叶",
+      team: "Voice Zine Lab",
+      type: "团队报名",
+      track: "内容生产",
+      status: "pending",
+      risk: "low",
+      tags: ["播客", "Newsletter", "AI 写作"],
+      aiDone: false,
+      summary: "团队想做一个把现场录音转成长文和播客脚本的 Agent，已有早期 Demo。",
+      answers: ["已有 5 期播客素材", "希望现场补一名前端"],
+      email: "suye@example.com",
+    },
+    {
+      id: 6,
+      name: "高远",
+      team: "Topic Radar",
+      type: "个人报名",
+      track: "Agent 工具",
+      status: "waitlist",
+      risk: "medium",
+      tags: ["RSS", "选题", "Agent"],
+      aiDone: true,
+      summary: "报名者希望做内容创作者的话题雷达，技术基础扎实但赛道匹配度需现场确认。",
+      answers: ["熟悉 RSS / 社媒 API", "想用 Agent 整理每周选题"],
+      email: "gaoyuan@example.com",
+    },
   ],
   projects: [
     {
@@ -128,6 +156,28 @@ const state = {
       featured: false,
       files: ["MP3", "文档", "图片"],
       description: "把现场复盘自动整理成邮件和公众号草稿。",
+    },
+    {
+      id: 4,
+      title: "Voice Zine Agent",
+      track: "内容生产",
+      status: "published",
+      votes: 156,
+      score: 4.8,
+      featured: true,
+      files: ["MP3", "文档", "图片"],
+      description: "现场录音和复盘音频自动转成可发布的长文和播客脚本。",
+    },
+    {
+      id: 5,
+      title: "Topic Radar",
+      track: "Agent 工具",
+      status: "published",
+      votes: 102,
+      score: 4.5,
+      featured: false,
+      files: ["HTML", "图片"],
+      description: "聚合多个社媒和 RSS 信号，给内容创作者生成每周选题。",
     },
   ],
 };
@@ -228,55 +278,60 @@ function renderMetrics() {
     .join("");
 }
 
-function renderFields() {
-  $("#field-list").innerHTML = state.fields
-    .map(
-      (field, index) => {
-        const optionsValue = (field.options || []).join("\n");
-        return `
-        <div class="field-item field-editor" data-field-index="${index}">
-          <span class="field-index">${String(index + 1).padStart(2, "0")}</span>
-          <div class="field-editor-main">
-            <label>
-              <span>问题标题</span>
-              <input data-field-prop="label" type="text" value="${escapeHtml(field.label)}" aria-label="问题标题" />
-            </label>
-            <div class="field-controls">
-              <label>
-                <span>类型</span>
-                <select data-field-prop="type" aria-label="问题类型">
-                  ${fieldTypes
-                    .map(
-                      ([value, label]) =>
-                        `<option value="${value}" ${field.type === value ? "selected" : ""}>${label}</option>`,
-                    )
-                    .join("")}
-                </select>
-              </label>
-              <label>
-                <span>占位提示</span>
-                <input data-field-prop="placeholder" type="text" value="${escapeHtml(field.placeholder || "")}" aria-label="占位提示" />
-              </label>
-              <label class="field-required">
-                <input data-field-prop="required" type="checkbox" ${field.required ? "checked" : ""} aria-label="必填" />
-                <span>必填</span>
-              </label>
-            </div>
-            ${
-              optionFieldTypes.has(field.type)
-                ? `<label class="option-editor">
-                    <span>选项</span>
-                    <textarea data-field-prop="options" rows="3" aria-label="问题选项">${escapeHtml(optionsValue)}</textarea>
-                    <small>每行一个选项，会同步到右侧预览。</small>
-                  </label>`
-                : ""
-            }
-          </div>
+function fieldCardHtml(field, index) {
+  const optionsValue = (field.options || []).join("\n");
+  const hasOptions = optionFieldTypes.has(field.type);
+  return `
+    <div class="field-item field-editor" data-field-index="${index}">
+      <span class="field-index">${String(index + 1).padStart(2, "0")}</span>
+      <div class="field-editor-main">
+        <div class="field-row field-row-head">
+          <label class="field-title">
+            <span>问题标题</span>
+            <input data-field-prop="label" type="text" value="${escapeHtml(field.label)}" aria-label="问题标题" placeholder="例如：你想解决什么问题？" />
+          </label>
+          <label class="field-required">
+            <input data-field-prop="required" type="checkbox" ${field.required ? "checked" : ""} aria-label="必填" />
+            <span>必填</span>
+          </label>
           <button class="field-delete" data-field-delete type="button" aria-label="删除问题">删除</button>
         </div>
-      `;
-      },
-    )
+        <div class="field-row field-row-config">
+          <label class="field-type">
+            <span>题型</span>
+            <select data-field-prop="type" aria-label="问题类型">
+              ${fieldTypes
+                .map(
+                  ([value, label]) =>
+                    `<option value="${value}" ${field.type === value ? "selected" : ""}>${label}</option>`,
+                )
+                .join("")}
+            </select>
+          </label>
+          <label class="field-placeholder">
+            <span>占位提示</span>
+            <input data-field-prop="placeholder" type="text" value="${escapeHtml(field.placeholder || "")}" aria-label="占位提示" placeholder="参赛者填写时看到的灰字" />
+          </label>
+        </div>
+        <div class="field-options-wrap" data-field-options-wrap>
+          ${
+            hasOptions
+              ? `<label class="option-editor">
+                  <span>选项（每行一个）</span>
+                  <textarea data-field-prop="options" rows="3" aria-label="问题选项">${escapeHtml(optionsValue)}</textarea>
+                  <small>会同步到右侧预览，参赛者将看到这些选项。</small>
+                </label>`
+              : ""
+          }
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function renderFields() {
+  $("#field-list").innerHTML = state.fields
+    .map((field, index) => fieldCardHtml(field, index))
     .join("");
 
   renderFormPreview();
@@ -541,7 +596,8 @@ function renderEventPreview() {
 function updateFieldFromInput(input) {
   const item = input.closest("[data-field-index]");
   if (!item) return;
-  const field = state.fields[Number(item.dataset.fieldIndex)];
+  const index = Number(item.dataset.fieldIndex);
+  const field = state.fields[index];
   const prop = input.dataset.fieldProp;
   if (!field || !prop) return;
 
@@ -569,7 +625,17 @@ function updateFieldFromInput(input) {
     if (!optionFieldTypes.has(field.type)) {
       field.options = [];
     }
-    renderFields();
+    const wrap = item.querySelector("[data-field-options-wrap]");
+    if (wrap) {
+      wrap.innerHTML = optionFieldTypes.has(field.type)
+        ? `<label class="option-editor">
+            <span>选项（每行一个）</span>
+            <textarea data-field-prop="options" rows="3" aria-label="问题选项">${escapeHtml((field.options || []).join("\n"))}</textarea>
+            <small>会同步到右侧预览，参赛者将看到这些选项。</small>
+          </label>`
+        : "";
+    }
+    renderFormPreview();
     return;
   }
 
@@ -615,13 +681,20 @@ function bindEvents() {
     state.fields.push({
       id: `custom_${Date.now()}`,
       label: `新增问题 ${next}`,
-      type: "textarea",
+      type: "text",
       required: false,
-      placeholder: "参赛者填写内容",
+      placeholder: "参赛者在这里填写",
       options: [],
     });
     renderFields();
-    showToast("已新增一个报名问题");
+    showToast("已新增一个报名问题，可编辑标题、题型和必填");
+    setTimeout(() => {
+      const items = $all("[data-field-index]");
+      const last = items[items.length - 1];
+      const titleInput = last?.querySelector('[data-field-prop="label"]');
+      titleInput?.focus();
+      titleInput?.select();
+    }, 0);
   });
 
   $("#field-list").addEventListener("input", (event) => {

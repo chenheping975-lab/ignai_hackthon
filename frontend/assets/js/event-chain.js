@@ -86,6 +86,55 @@ const hackathonEvents = [
     ],
   },
   {
+    id: "ignai-content-maker-athon",
+    title: "Content Maker Athon · 内容专场",
+    status: "showcase",
+    statusText: "作品展示中",
+    date: "2026.06.18 - 06.19",
+    location: "长沙 · 线下",
+    cover: "./assets/img/halo-showcase.png",
+    summary: "面向内容创作者的一场黑客松：让写作、播客、图文和现场记录被 Agent 重新整理一次。",
+    href: "./event.html?id=ignai-content-maker-athon",
+    projectsHref: "./projects.html?event=ignai-content-maker-athon",
+    keywords: ["Content", "Podcast", "Newsletter", "AI Workflow"],
+    tracks: [
+      { name: "内容生产", description: "图文、公众号、播客、复盘文档的 AI 工作流。" },
+      { name: "Agent 工具", description: "面向内容创作者的小工具和 Agent 原型。" },
+    ],
+    stages: [
+      { key: "registration", label: "报名开放", done: true },
+      { key: "review", label: "审核组队", done: true },
+      { key: "submission", label: "作品提交", done: true },
+      { key: "showcase", label: "公开展示", done: true },
+    ],
+    formFields: [
+      { key: "name", label: "姓名", type: "text", required: true, placeholder: "请填写姓名" },
+      { key: "channel", label: "内容主页 / 社交账号", type: "url", required: false, placeholder: "https://..." },
+      {
+        key: "format",
+        label: "主要创作形式",
+        type: "checkbox",
+        required: true,
+        options: ["图文", "播客 / 音频", "视频脚本", "PPT / 长文", "代码 Demo"],
+      },
+      {
+        key: "track",
+        label: "想做的方向",
+        type: "select",
+        required: true,
+        options: ["内容生产", "Agent 工具"],
+      },
+      {
+        key: "idea",
+        label: "你想解决什么创作问题？",
+        type: "textarea",
+        required: true,
+        placeholder: "一句话讲清楚你要做的事情",
+      },
+    ],
+    submissionRequirements: ["项目说明", "演示链接", "PPT 或 HTML", "图片或文档附件", "不接收视频上传"],
+  },
+  {
     id: "ignai-campus-agent-lab",
     title: "Campus Agent Lab · 实训专场",
     status: "preview",
@@ -187,6 +236,62 @@ const hackathonProjects = [
     submittedAt: "2026-07-21T19:50:00+08:00",
   },
   {
+    id: "voice-zine-agent",
+    eventId: "ignai-content-maker-athon",
+    title: "Voice Zine Agent",
+    track: "内容生产",
+    image: "./assets/img/halo-showcase.png",
+    tagline: "把现场录音和复盘音频自动转成可发布的长文和播客脚本。",
+    description: "支持从音频到图文长文、Newsletter 和公众号草稿的多渠道输出，编辑部可在浏览器内审改。",
+    files: ["MP3", "文档", "图片"],
+    votes: 156,
+    score: 4.8,
+    featured: true,
+    submittedAt: "2026-06-19T16:40:00+08:00",
+  },
+  {
+    id: "topic-radar",
+    eventId: "ignai-content-maker-athon",
+    title: "Topic Radar",
+    track: "Agent 工具",
+    image: "./assets/img/local-global-embers.png",
+    tagline: "面向内容创作者的话题雷达和选题 Agent。",
+    description: "聚合多个社媒、RSS 和群聊信号，按作者的兴趣画像生成每周可写选题，附带原始链接。",
+    files: ["HTML", "图片"],
+    votes: 102,
+    score: 4.5,
+    featured: true,
+    submittedAt: "2026-06-19T17:08:00+08:00",
+  },
+  {
+    id: "slide-deck-drafts",
+    eventId: "ignai-content-maker-athon",
+    title: "Slide Deck Drafts",
+    track: "内容生产",
+    image: "./assets/img/collaboration-threads.png",
+    tagline: "从一篇长文直接生成可继续编辑的 PPT 与图卡。",
+    description: "用结构化大纲驱动排版，输出可下载的 PPT，方便现场分享和复盘。",
+    files: ["PPT", "图片", "文档"],
+    votes: 78,
+    score: 4.3,
+    featured: false,
+    submittedAt: "2026-06-19T18:21:00+08:00",
+  },
+  {
+    id: "newsletter-copilot",
+    eventId: "ignai-content-maker-athon",
+    title: "Newsletter Copilot",
+    track: "内容生产",
+    image: "./assets/img/ignai-business-card-mockup.webp",
+    tagline: " Newsletter 编辑的素材归档 + 写作副驾驶。",
+    description: "收集订阅者反馈和往期数据，给出本期专栏角度和段落草稿，编辑只做最后润色。",
+    files: ["HTML", "图片"],
+    votes: 54,
+    score: 4.2,
+    featured: false,
+    submittedAt: "2026-06-19T15:30:00+08:00",
+  },
+  {
     id: "practice-agent-board",
     eventId: "ignai-campus-agent-lab",
     title: "Practice Agent Board",
@@ -240,7 +345,9 @@ function renderHomeEvents() {
 
   list.innerHTML = hackathonEvents
     .map(
-      (event, index) => `
+      (event, index) => {
+        const projectCount = projectsForEvent(event.id).length;
+        return `
         <article class="event-card" data-reveal data-reveal-delay="${Math.min(index + 1, 4)}">
           <img src="${escapeEventHtml(event.cover)}" alt="${escapeEventHtml(event.title)} 主视觉" />
           <div class="event-card-body">
@@ -252,15 +359,15 @@ function renderHomeEvents() {
             <p>${escapeEventHtml(event.summary)}</p>
             <dl>
               <div><dt>时间</dt><dd>${escapeEventHtml(event.date)}</dd></div>
-              <div><dt>作品</dt><dd>${projectsForEvent(event.id).length} 个 mock 项目</dd></div>
+              <div><dt>赛道</dt><dd>${event.tracks.length} 个赛道${projectCount ? ` · ${projectCount} 个示例作品` : ""}</dd></div>
             </dl>
             <div class="event-card-actions">
               <a class="primary-button" href="${escapeEventHtml(event.href)}">进入活动</a>
-              <a class="outline-button" href="${escapeEventHtml(event.projectsHref)}">作品平台</a>
             </div>
           </div>
         </article>
-      `,
+      `;
+      },
     )
     .join("");
 }
@@ -278,6 +385,65 @@ function renderStatusRail(event) {
       `,
     )
     .join("");
+}
+
+const STAGE_NEXT_HINTS = {
+  preview: {
+    label: "筹备中",
+    hint: "活动正在筹备，报名窗口即将开放。可以先看看赛道和这次活动的方向。",
+    primaryCta: { label: "查看赛道", href: "#event-track-grid" },
+    secondaryCta: null,
+  },
+  registration: {
+    label: "报名开放",
+    hint: "现在可以填写报名问卷。提交后平台会进入审核，结果通过邮件和详情页同步。",
+    primaryCta: { label: "去报名", href: "#registration" },
+    secondaryCta: { label: "看看作品平台", href: "" },
+  },
+  review: {
+    label: "审核组队",
+    hint: "报名已经截止，管理员正在审核并组队。可以提前预览这次活动的作品平台布局。",
+    primaryCta: { label: "查看提交要求", href: "#requirements" },
+    secondaryCta: { label: "预览作品平台", href: "" },
+  },
+  submission: {
+    label: "作品提交",
+    hint: "已通过的参赛者请在截止时间前提交项目。提交后作品会进入待公开队列。",
+    primaryCta: { label: "查看提交要求", href: "#requirements" },
+    secondaryCta: { label: "看看作品平台", href: "" },
+  },
+  showcase: {
+    label: "公开展示",
+    hint: "作品已经公开，可以按赛道、票数、最新浏览。注册用户可以为喜欢的作品点赞。",
+    primaryCta: { label: "进入作品平台", href: "" },
+    secondaryCta: null,
+  },
+};
+
+function renderStatusNext(event) {
+  const box = document.getElementById("event-status-next");
+  if (!box) return;
+
+  const hint = STAGE_NEXT_HINTS[event.status] || STAGE_NEXT_HINTS.registration;
+  const primaryHref = hint.primaryCta.href || event.projectsHref;
+  const secondaryHref = hint.secondaryCta && (hint.secondaryCta.href || event.projectsHref);
+
+  box.innerHTML = `
+    <div class="status-next-card">
+      <div>
+        <span class="caption">${escapeEventHtml(hint.label)} · 当前阶段</span>
+        <p>${escapeEventHtml(hint.hint)}</p>
+      </div>
+      <div class="status-next-actions">
+        <a class="primary-button" href="${escapeEventHtml(primaryHref)}">${escapeEventHtml(hint.primaryCta.label)}</a>
+        ${
+          hint.secondaryCta
+            ? `<a class="outline-button" href="${escapeEventHtml(secondaryHref)}">${escapeEventHtml(hint.secondaryCta.label)} →</a>`
+            : ""
+        }
+      </div>
+    </div>
+  `;
 }
 
 function renderTracks(event) {
@@ -445,6 +611,7 @@ function renderEventPage() {
   }
 
   renderStatusRail(event);
+  renderStatusNext(event);
   renderTracks(event);
   renderRegistrationForm(event);
   renderSubmission(event);

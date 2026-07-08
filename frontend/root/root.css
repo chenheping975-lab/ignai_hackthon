@@ -365,7 +365,7 @@ h2 {
 
 .field-item {
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-columns: 32px minmax(0, 1fr);
   gap: 12px;
   align-items: start;
 }
@@ -388,7 +388,7 @@ h2 {
 
 .field-editor-main {
   display: grid;
-  gap: 10px;
+  gap: 12px;
 }
 
 .field-editor-main label,
@@ -406,36 +406,54 @@ h2 {
   text-transform: uppercase;
 }
 
-.field-controls {
+.field-row {
   display: grid;
-  grid-template-columns: minmax(130px, 0.8fr) minmax(170px, 1fr) auto;
   gap: 10px;
+}
+
+.field-row-head {
+  grid-template-columns: minmax(0, 1fr) auto auto;
   align-items: end;
+}
+
+.field-row-config {
+  grid-template-columns: minmax(140px, 0.7fr) minmax(0, 1fr);
+  align-items: end;
+}
+
+.field-title input,
+.field-placeholder input,
+.field-type select,
+.option-editor textarea {
+  min-height: 40px;
 }
 
 .field-required {
   display: inline-flex !important;
+  flex-direction: row;
   align-items: center;
-  justify-content: center;
-  min-height: 42px;
+  gap: 8px;
+  min-height: 40px;
   border: 1px solid var(--line);
   border-radius: var(--radius);
   padding: 0 12px;
   background: rgba(255, 255, 255, 0.04);
   color: var(--text);
   white-space: nowrap;
+  margin-bottom: 0;
 }
 
 .field-required input,
 .choice-preview input {
   width: auto;
+  margin: 0;
 }
 
 .field-delete {
-  min-height: 38px;
+  min-height: 40px;
   border: 1px solid rgba(248, 113, 113, 0.36);
   border-radius: var(--radius);
-  padding: 0 10px;
+  padding: 0 12px;
   color: var(--red);
   background: rgba(248, 113, 113, 0.08);
   cursor: pointer;
@@ -445,6 +463,11 @@ h2 {
 .option-editor small {
   color: var(--muted);
   line-height: 1.5;
+}
+
+.field-options-wrap {
+  display: grid;
+  gap: 8px;
 }
 
 .choice-preview {
@@ -742,8 +765,8 @@ tbody tr:hover {
   .project-board,
   .root-setup form,
   .event-rail,
-  .field-item,
-  .field-controls {
+  .field-row-head,
+  .field-row-config {
     grid-template-columns: 1fr;
   }
 }
