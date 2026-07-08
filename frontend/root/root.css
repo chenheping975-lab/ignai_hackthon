@@ -280,6 +280,14 @@ h2 {
   gap: 16px;
 }
 
+.split-grid > .panel:last-child {
+  position: sticky;
+  top: 88px;
+  align-self: start;
+  max-height: calc(100vh - 110px);
+  overflow-y: auto;
+}
+
 .panel {
   padding: 18px;
 }
@@ -358,8 +366,8 @@ h2 {
 .field-item {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
-  gap: 10px;
-  align-items: center;
+  gap: 12px;
+  align-items: start;
 }
 
 .field-index {
@@ -376,6 +384,86 @@ h2 {
 .field-meta {
   color: var(--muted);
   font-size: 0.86rem;
+}
+
+.field-editor-main {
+  display: grid;
+  gap: 10px;
+}
+
+.field-editor-main label,
+.option-editor {
+  display: grid;
+  gap: 6px;
+}
+
+.field-editor-main label span,
+.option-editor span {
+  color: var(--faint);
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.field-controls {
+  display: grid;
+  grid-template-columns: minmax(130px, 0.8fr) minmax(170px, 1fr) auto;
+  gap: 10px;
+  align-items: end;
+}
+
+.field-required {
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  min-height: 42px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 0 12px;
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text);
+  white-space: nowrap;
+}
+
+.field-required input,
+.choice-preview input {
+  width: auto;
+}
+
+.field-delete {
+  min-height: 38px;
+  border: 1px solid rgba(248, 113, 113, 0.36);
+  border-radius: var(--radius);
+  padding: 0 10px;
+  color: var(--red);
+  background: rgba(248, 113, 113, 0.08);
+  cursor: pointer;
+  font-weight: 850;
+}
+
+.option-editor small {
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.choice-preview {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.choice-preview label {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 38px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 0 10px;
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text);
+  font-weight: 800;
 }
 
 .filter-bar {
@@ -628,6 +716,11 @@ tbody tr:hover {
   .preview-body {
     grid-template-columns: 1fr;
   }
+
+  .split-grid > .panel:last-child {
+    position: static;
+    max-height: none;
+  }
 }
 
 @media (max-width: 700px) {
@@ -648,7 +741,9 @@ tbody tr:hover {
   .metric-grid,
   .project-board,
   .root-setup form,
-  .event-rail {
+  .event-rail,
+  .field-item,
+  .field-controls {
     grid-template-columns: 1fr;
   }
 }

@@ -12,3 +12,4 @@ tmp/
 .env.local
 backend/java-web/src/main/webapp/uploads/*
 !backend/java-web/src/main/webapp/uploads/.gitkeep
+.gstack/

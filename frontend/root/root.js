@@ -4,10 +4,38 @@ const state = {
   previewRole: "guest",
   previewPhase: "registration",
   fields: [
-    { label: "姓名", type: "text", required: true },
-    { label: "手机号", type: "text", required: true },
-    { label: "关注赛道", type: "select", required: true },
-    { label: "你想解决什么问题？", type: "textarea", required: true },
+    {
+      id: "name",
+      label: "姓名",
+      type: "text",
+      required: true,
+      placeholder: "请填写真实姓名",
+      options: [],
+    },
+    {
+      id: "phone",
+      label: "手机号",
+      type: "text",
+      required: true,
+      placeholder: "用于接收活动通知",
+      options: [],
+    },
+    {
+      id: "track",
+      label: "关注赛道",
+      type: "select",
+      required: true,
+      placeholder: "请选择赛道",
+      options: ["Agent 工具", "教育实训", "内容生产", "商业应用"],
+    },
+    {
+      id: "problem",
+      label: "你想解决什么问题？",
+      type: "textarea",
+      required: true,
+      placeholder: "简单描述你在意的问题和想做的方向",
+      options: [],
+    },
   ],
   registrations: [
     {
@@ -120,12 +148,33 @@ const riskText = {
   high: "高",
 };
 
+const fieldTypes = [
+  ["text", "短文本"],
+  ["textarea", "长文本"],
+  ["select", "下拉选择"],
+  ["radio", "单选"],
+  ["checkbox", "多选"],
+  ["url", "链接"],
+  ["file", "附件"],
+];
+
+const optionFieldTypes = new Set(["select", "radio", "checkbox"]);
+
 function $(selector) {
   return document.querySelector(selector);
 }
 
 function $all(selector) {
   return [...document.querySelectorAll(selector)];
+}
+
+function escapeHtml(value) {
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
 }
 
 function showToast(message) {
@@ -182,31 +231,106 @@ function renderMetrics() {
 function renderFields() {
   $("#field-list").innerHTML = state.fields
     .map(
-      (field, index) => `
-        <div class="field-item">
+      (field, index) => {
+        const optionsValue = (field.options || []).join("\n");
+        return `
+        <div class="field-item field-editor" data-field-index="${index}">
           <span class="field-index">${String(index + 1).padStart(2, "0")}</span>
-          <div>
-            <strong>${field.label}</strong>
-            <div class="field-meta">${field.type} · ${field.required ? "必填" : "选填"}</div>
+          <div class="field-editor-main">
+            <label>
+              <span>问题标题</span>
+              <input data-field-prop="label" type="text" value="${escapeHtml(field.label)}" aria-label="问题标题" />
+            </label>
+            <div class="field-controls">
+              <label>
+                <span>类型</span>
+                <select data-field-prop="type" aria-label="问题类型">
+                  ${fieldTypes
+                    .map(
+                      ([value, label]) =>
+                        `<option value="${value}" ${field.type === value ? "selected" : ""}>${label}</option>`,
+                    )
+                    .join("")}
+                </select>
+              </label>
+              <label>
+                <span>占位提示</span>
+                <input data-field-prop="placeholder" type="text" value="${escapeHtml(field.placeholder || "")}" aria-label="占位提示" />
+              </label>
+              <label class="field-required">
+                <input data-field-prop="required" type="checkbox" ${field.required ? "checked" : ""} aria-label="必填" />
+                <span>必填</span>
+              </label>
+            </div>
+            ${
+              optionFieldTypes.has(field.type)
+                ? `<label class="option-editor">
+                    <span>选项</span>
+                    <textarea data-field-prop="options" rows="3" aria-label="问题选项">${escapeHtml(optionsValue)}</textarea>
+                    <small>每行一个选项，会同步到右侧预览。</small>
+                  </label>`
+                : ""
+            }
           </div>
-          <span class="pill">${field.required ? "required" : "optional"}</span>
+          <button class="field-delete" data-field-delete type="button" aria-label="删除问题">删除</button>
         </div>
-      `,
+      `;
+      },
     )
     .join("");
 
+  renderFormPreview();
+}
+
+function previewInput(field) {
+  const label = escapeHtml(field.label);
+  const placeholder = escapeHtml(field.placeholder || "参赛者填写内容");
+
+  if (field.type === "textarea") {
+    return `<textarea rows="3" placeholder="${placeholder}"></textarea>`;
+  }
+
+  if (field.type === "select") {
+    const options = field.options?.length ? field.options : ["选项 A", "选项 B"];
+    return `
+      <select>
+        ${options.map((option) => `<option>${escapeHtml(option)}</option>`).join("")}
+      </select>
+    `;
+  }
+
+  if (field.type === "radio" || field.type === "checkbox") {
+    const options = field.options?.length ? field.options : ["选项 A", "选项 B"];
+    return `
+      <div class="choice-preview" aria-label="${label}">
+        ${options
+          .map(
+            (option) => `
+              <label>
+                <input type="${field.type}" name="preview-${escapeHtml(field.id || field.label)}" />
+                <span>${escapeHtml(option)}</span>
+              </label>
+            `,
+          )
+          .join("")}
+      </div>
+    `;
+  }
+
+  if (field.type === "file") {
+    return `<input type="file" accept=".ppt,.pptx,.pdf,.html,.zip,.mp3,.png,.jpg,.jpeg,.webp,.doc,.docx" />`;
+  }
+
+  return `<input type="${field.type === "url" ? "url" : "text"}" placeholder="${placeholder}" />`;
+}
+
+function renderFormPreview() {
   $("#form-preview").innerHTML = state.fields
     .map((field) => {
-      const input =
-        field.type === "textarea"
-          ? "<textarea rows=\"3\" placeholder=\"参赛者填写内容\"></textarea>"
-          : field.type === "select"
-            ? "<select><option>Agent 工具</option><option>教育实训</option><option>内容生产</option></select>"
-            : "<input type=\"text\" placeholder=\"参赛者填写内容\" />";
       return `
         <label class="demo-question">
-          <strong>${field.label}${field.required ? " *" : ""}</strong>
-          ${input}
+          <strong>${escapeHtml(field.label)}${field.required ? " *" : ""}</strong>
+          ${previewInput(field)}
         </label>
       `;
     })
@@ -414,6 +538,57 @@ function renderEventPreview() {
   `;
 }
 
+function updateFieldFromInput(input) {
+  const item = input.closest("[data-field-index]");
+  if (!item) return;
+  const field = state.fields[Number(item.dataset.fieldIndex)];
+  const prop = input.dataset.fieldProp;
+  if (!field || !prop) return;
+
+  if (prop === "required") {
+    field.required = input.checked;
+    renderFormPreview();
+    return;
+  }
+
+  if (prop === "options") {
+    field.options = input.value
+      .split(/\n|,/)
+      .map((option) => option.trim())
+      .filter(Boolean);
+    renderFormPreview();
+    return;
+  }
+
+  field[prop] = input.value;
+
+  if (prop === "type") {
+    if (optionFieldTypes.has(field.type) && (!field.options || field.options.length === 0)) {
+      field.options = ["选项 A", "选项 B"];
+    }
+    if (!optionFieldTypes.has(field.type)) {
+      field.options = [];
+    }
+    renderFields();
+    return;
+  }
+
+  renderFormPreview();
+}
+
+function deleteField(button) {
+  const item = button.closest("[data-field-index]");
+  if (!item) return;
+  if (state.fields.length <= 1) {
+    showToast("至少保留一个报名问题");
+    return;
+  }
+  const index = Number(item.dataset.fieldIndex);
+  const [removed] = state.fields.splice(index, 1);
+  renderFields();
+  showToast(`已删除问题：${removed.label}`);
+}
+
 function bindEvents() {
   $all("[data-admin-view]").forEach((button) => {
     button.addEventListener("click", () => setView(button.dataset.adminView));
@@ -436,9 +611,28 @@ function bindEvents() {
   });
 
   $("#add-field-button").addEventListener("click", () => {
-    state.fields.push({ label: `新增问题 ${state.fields.length + 1}`, type: "textarea", required: false });
+    const next = state.fields.length + 1;
+    state.fields.push({
+      id: `custom_${Date.now()}`,
+      label: `新增问题 ${next}`,
+      type: "textarea",
+      required: false,
+      placeholder: "参赛者填写内容",
+      options: [],
+    });
     renderFields();
     showToast("已新增一个报名问题");
+  });
+
+  $("#field-list").addEventListener("input", (event) => {
+    if (event.target.matches("[data-field-prop]")) updateFieldFromInput(event.target);
+  });
+  $("#field-list").addEventListener("change", (event) => {
+    if (event.target.matches("[data-field-prop]")) updateFieldFromInput(event.target);
+  });
+  $("#field-list").addEventListener("click", (event) => {
+    const deleteButton = event.target.closest("[data-field-delete]");
+    if (deleteButton) deleteField(deleteButton);
   });
 
   ["registration-status-filter", "registration-track-filter", "registration-search"].forEach((id) => {

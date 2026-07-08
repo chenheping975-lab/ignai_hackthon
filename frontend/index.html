@@ -6,11 +6,10 @@
     <title>IGNAI AI Skillathon</title>
     <meta
       name="description"
-      content="IGNAI AI Skillathon：连接创造者，点燃可能性。长沙 AI 社区黑客松管理与作品展示平台。"
+      content="IGNAI AI Skillathon：连接创造者，点燃可能性。长沙 AI 社区黑客松活动入口与作品展示平台。"
     />
     <link rel="icon" href="./assets/img/ignai-torch.png" />
     <script>
-      // 预闪主题：避免 reload 时白屏一帧
       (function () {
         try {
           var stored = localStorage.getItem("ignai-theme");
@@ -34,10 +33,9 @@
         <img src="./assets/img/ignai-logo-horizontal.webp" alt="IGNAI" />
       </a>
       <nav class="nav-links" aria-label="主导航">
-        <a href="#why">为什么</a>
-        <a href="#action">行动</a>
-        <a href="#journey">流程</a>
-        <a href="#showcase">作品</a>
+        <a href="#events">活动</a>
+        <a href="#spirit">精神</a>
+        <a href="#works-entry">作品平台</a>
         <a href="https://www.ignai.cn/" target="_blank" rel="noreferrer">官网</a>
       </nav>
       <div class="header-actions">
@@ -73,12 +71,12 @@
             <path d="M5.32501 4.125C4.98751 3.7875 4.46251 3.7875 4.12501 4.125C3.78751 4.4625 3.78751 4.9875 4.12501 5.325L5.32501 6.525C5.47501 6.675 5.70001 6.7875 5.92501 6.7875C6.15001 6.7875 6.37501 6.7125 6.52501 6.525C6.86251 6.1875 6.86251 5.6625 6.52501 5.325L5.32501 4.125Z" />
           </svg>
         </button>
-        <a class="header-cta header-join" href="#apply">加入黑客松</a>
+        <a class="header-cta header-join" href="#events">查看活动</a>
       </div>
     </header>
 
     <main id="top">
-      <section class="hero">
+      <section class="hero home-hero">
         <div class="hero-gradient" aria-hidden="true"></div>
         <div class="hero-inner">
           <div class="hero-copy">
@@ -89,11 +87,11 @@
               人链接人。
             </h1>
             <p class="hero-lead" data-reveal data-reveal-delay="2">
-              两天一夜的 IGNAI 黑客松：你带来一个在意的问题，带走能跑的 Demo、能继续合作的同伴、和被讨论过的作品。
+              IGNAI 把本地创造者聚到同一张桌子前：带着问题来，带着能继续生长的作品、同伴和讨论离开。
             </p>
             <div class="hero-actions" data-reveal data-reveal-delay="3">
-              <a class="primary-button" href="#apply">提交报名</a>
-              <a class="outline-button" href="#showcase">查看作品</a>
+              <a class="primary-button" href="#events">查看开放活动</a>
+              <a class="outline-button" href="https://www.ignai.cn/" target="_blank" rel="noreferrer">回到官网</a>
             </div>
           </div>
 
@@ -102,12 +100,12 @@
             <div class="stage-card">
               <span>LOCAL ROOTS · GLOBAL SIGNAL</span>
               <strong>AI Skillathon</strong>
-              <p>长沙 · 线下黑客松</p>
+              <p>线下相遇，线上持续被看见。</p>
             </div>
             <div class="event-meta">
               <div><span>城市</span><strong>长沙</strong></div>
               <div><span>形式</span><strong>线下黑客松</strong></div>
-              <div><span>状态</span><strong>开放报名</strong></div>
+              <div><span>入口</span><strong>单场活动</strong></div>
             </div>
           </aside>
         </div>
@@ -124,165 +122,58 @@
         </div>
       </section>
 
-      <section class="section problem" id="why">
-        <div class="section-copy">
-          <p class="eyebrow" data-reveal>THE PROBLEM</p>
-          <h2 data-reveal data-reveal-delay="1">AI 很热，但真正的连接很少。</h2>
-        </div>
-        <div class="card-grid four">
-          <article data-reveal data-reveal-delay="1">
-            <span>001</span>
-            <h3>信息过载</h3>
-            <p>刷不完的 AI 资讯，却不知道从哪里开始做自己的第一个作品。</p>
-          </article>
-          <article data-reveal data-reveal-delay="2">
-            <span>002</span>
-            <h3>孤独学习</h3>
-            <p>一个人学 AI，进度慢、方向散，缺少同伴和真实反馈。</p>
-          </article>
-          <article data-reveal data-reveal-delay="3">
-            <span>003</span>
-            <h3>纸上谈兵</h3>
-            <p>看过很多教程，但真正走到 Demo、路演和用户反馈的机会不多。</p>
-          </article>
-          <article data-reveal data-reveal-delay="4">
-            <span>004</span>
-            <h3>资源分散</h3>
-            <p>本地有人才、有问题、有创意，需要一个让他们聚合的场。</p>
-          </article>
-        </div>
-      </section>
-
-      <section class="section action" id="action">
+      <section class="section event-hub" id="events">
         <div class="section-copy sticky-copy">
-          <p class="eyebrow" data-reveal>CAPABILITIES</p>
-          <h2 data-reveal data-reveal-delay="1">我们怎么行动。</h2>
+          <p class="eyebrow" data-reveal>HACKATHONS</p>
+          <h2 data-reveal data-reveal-delay="1">先选择一场正在发生的黑客松。</h2>
           <p data-reveal data-reveal-delay="2">
-            黑客松不是孤立活动，而是 IGNAI 社区行动方式的一次集中表达：面对面交流、组队共创、作品展示、内容沉淀。
+            首页不再塞满流程说明。报名、队伍、作品和投票都跟随具体活动走，每一场黑客松拥有自己的详情页和作品平台。
           </p>
         </div>
-        <div class="action-list">
-          <article data-reveal>
-            <span>[ 01 ]</span>
-            <h3>线下活动，真实碰撞。</h3>
-            <p>分享会、黑客松、项目路演，让想法在现场被看见、被质疑、被推进。</p>
-          </article>
+        <div class="event-card-list" id="event-list" aria-live="polite"></div>
+      </section>
+
+      <section class="section spirit" id="spirit">
+        <div class="section-copy">
+          <p class="eyebrow" data-reveal>COMMUNITY SIGNAL</p>
+          <h2 data-reveal data-reveal-delay="1">不是单纯比赛，是一次集中行动。</h2>
+        </div>
+        <div class="card-grid three">
           <article data-reveal data-reveal-delay="1">
-            <span>[ 02 ]</span>
-            <h3>项目共创，从 0 到 1。</h3>
-            <p>个人可以现场组队，团队可以带着方向进入冲刺，围绕 AI 做出能跑的东西。</p>
+            <span>01</span>
+            <h3>真实问题</h3>
+            <p>从课程、工作、创作和本地场景里带来真实问题，而不是为了比赛临时编一个题。</p>
           </article>
           <article data-reveal data-reveal-delay="2">
-            <span>[ 03 ]</span>
-            <h3>内容输出，放大信号。</h3>
-            <p>作品页、复盘记录、工具清单和项目故事，成为赛后继续传播的内容资产。</p>
+            <span>02</span>
+            <h3>现场共创</h3>
+            <p>开发者、设计师、内容创作者和产品同学在现场交换能力，让想法快速变成原型。</p>
           </article>
           <article data-reveal data-reveal-delay="3">
-            <span>[ 04 ]</span>
-            <h3>开放文化，人人可参与。</h3>
-            <p>学生、开发者、设计师、创业者、内容创作者，只要对 AI 有热情，都有位置。</p>
-          </article>
-        </div>
-      </section>
-
-      <section class="section journey" id="journey">
-        <div class="section-copy">
-          <p class="eyebrow" data-reveal>48 HOURS</p>
-          <h2 data-reveal data-reveal-delay="1">两天一夜，把灵感推进到作品。</h2>
-          <p data-reveal data-reveal-delay="2">
-            前台是一场活动，后台是一套流程。报名、组队、审核、提交、评分和飞书备份都服务于一个目标：让作品顺利发生。
-          </p>
-        </div>
-        <div class="timeline">
-          <div class="timeline-item" data-reveal>
-            <span>01</span>
-            <strong>报名与组队</strong>
-            <p>支持个人和团队报名，AI 辅助整理标签，管理员审核后发送通知。</p>
-          </div>
-          <div class="timeline-item" data-reveal data-reveal-delay="1">
-            <span>02</span>
-            <strong>现场冲刺</strong>
-            <p>围绕 Agent、产品原型、内容工具和真实业务场景推进 Demo。</p>
-          </div>
-          <div class="timeline-item" data-reveal data-reveal-delay="2">
             <span>03</span>
-            <strong>作品提交</strong>
-            <p>提交项目说明、Demo 链接、代码链接、PPT/HTML/MP3/图片等资料。</p>
-          </div>
-          <div class="timeline-item" data-reveal data-reveal-delay="3">
-            <span>04</span>
-            <strong>展示与曝光</strong>
-            <p>作品进入线上展示页，开放评分与投票，赛后仍可回看和传播。</p>
-          </div>
+            <h3>持续曝光</h3>
+            <p>作品不是路演结束就消失，而是进入活动作品平台，继续被浏览、点赞和二次传播。</p>
+          </article>
         </div>
       </section>
 
-      <section class="section showcase" id="showcase">
-        <div class="section-copy">
-          <p class="eyebrow" data-reveal>PROJECT SHOWCASE</p>
-          <h2 data-reveal data-reveal-delay="1">作品不只在现场闪一下。</h2>
+      <section class="section works-entry" id="works-entry">
+        <div class="section-copy sticky-copy">
+          <p class="eyebrow" data-reveal>PROJECT GALLERY</p>
+          <h2 data-reveal data-reveal-delay="1">作品平台跟随活动，不挂在首页硬讲流程。</h2>
           <p data-reveal data-reveal-delay="2">
-            作品展示参考对标站的信息结构，但视觉回到 IGNAI：火炬、暖色、真实连接和内容沉淀。MVP 不引入视频上传。
+            每场黑客松结束后沉淀自己的项目列表。MVP 阶段展示文字、图片、PPT、HTML、MP3 和链接，不引入视频上传。
           </p>
-        </div>
-        <div class="project-grid">
-          <article class="project-card" data-reveal data-reveal-delay="1">
-            <img src="./assets/img/local-global-embers.png" alt="Local global signal visual" />
-            <div>
-              <span>Agent Tools</span>
-              <h3>Campus Agent Hub</h3>
-              <p>面向高校实训的课程 Agent 与作品沉淀平台。</p>
-              <footer><strong>4.7</strong><small>128 votes</small></footer>
-            </div>
-          </article>
-          <article class="project-card" data-reveal data-reveal-delay="2">
-            <img src="./assets/img/ignai-business-card-mockup.webp" alt="IGNAI brand visual" />
-            <div>
-              <span>Productivity</span>
-              <h3>Feishu Sync Board</h3>
-              <p>把报名、作品和附件资料归档到飞书协作面板。</p>
-              <footer><strong>4.5</strong><small>96 votes</small></footer>
-            </div>
-          </article>
-        </div>
-      </section>
-
-      <section class="platform-layer" id="apply">
-        <div class="platform-card" data-reveal>
-          <p class="eyebrow">YOUR 48 HOURS</p>
-          <h2>从报名到展示，你只需要走完这四步。</h2>
-          <p>
-            两天一夜的节奏很紧凑，但路径很清楚。先在线上锁定名额，到现场组队冲刺，把 Demo 和资料交上来，最后让作品在展示页上被看见、被讨论、被打分。
-          </p>
-          <div class="platform-grid">
-            <div class="system-flow">
-              <span>报名</span>
-              <span>现场冲刺</span>
-              <span>提交作品</span>
-              <span>展示评分</span>
-            </div>
-
-            <section class="demo-console" aria-label="参赛流程预览">
-              <div class="demo-console-head">
-                <div>
-                  <span>参赛流程预览</span>
-                  <strong>先看一眼你将体验什么</strong>
-                </div>
-                <small id="demo-session-label">游客预览</small>
-              </div>
-              <div class="demo-tabs" role="tablist" aria-label="流程模块">
-                <button class="active" type="button" data-demo-tab="signup">报名</button>
-                <button type="button" data-demo-tab="project">作品</button>
-                <button type="button" data-demo-tab="rating">评分</button>
-              </div>
-              <div class="demo-panel" id="demo-panel"></div>
-            </section>
+          <div class="section-actions" data-reveal data-reveal-delay="3">
+            <a class="primary-button" href="./projects.html?event=ignai-ai-skillathon">查看样例作品平台</a>
           </div>
-
-          <div class="apply-actions">
-            <button class="primary-button" id="submit-registration-button" type="button">提交报名</button>
-            <button class="outline-button" id="login-or-switch-button" type="button">登录</button>
-            <p id="apply-feedback" role="status">先登录或注册账号，就能完成报名。</p>
+        </div>
+        <div class="gallery-snapshot" data-reveal data-reveal-delay="2">
+          <img src="./assets/img/halo-showcase.png" alt="IGNAI 作品平台视觉" />
+          <div>
+            <span>SHOWCASE</span>
+            <strong>按赛道、票数、最新和精选浏览</strong>
+            <p>公开后，注册用户可以点赞作品；后台可管理排序、精选和展示状态。</p>
           </div>
         </div>
       </section>
@@ -291,11 +182,13 @@
     <footer class="site-footer">
       <span>IGNAI AI Skillathon</span>
       <a href="https://www.ignai.cn/" target="_blank" rel="noreferrer">IGNAI 官网</a>
-      <a href="https://aihacktour.com/" target="_blank" rel="noreferrer">AI Hack Tour 结构参考</a>
+      <a href="https://aihacktour.com/" target="_blank" rel="noreferrer">AI Hack Tour 链路参考</a>
+      <a href="./root/">后台管理 MVP</a>
       <a href="./../docs/pdf/黑客松管理平台-研发说明书-v0.3.pdf">研发说明书</a>
     </footer>
 
     <script src="./assets/js/api.js"></script>
     <script src="./assets/js/app.js"></script>
+    <script src="./assets/js/event-chain.js"></script>
   </body>
 </html>

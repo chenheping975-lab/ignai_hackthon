@@ -1,7 +1,7 @@
 {
   "name": "ignai-skillathon-frontend",
   "private": true,
-  "version": "0.6.0",
+  "version": "0.7.0",
   "description": "IGNAI AI Skillathon 静态前端原型（含按钮自动化测试）",
   "scripts": {
     "test": "playwright test",
