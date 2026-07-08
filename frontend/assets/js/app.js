@@ -63,11 +63,13 @@ function initThemeToggle() {
 }
 
 const DEMO_REGISTRATION_KEY = "ignai_demo_registration";
+// 后端 API 默认启用，除非显式设为 "0" 或 window 变量设为 false
 const ENABLE_PUBLIC_API =
-  window.IGNAI_ENABLE_PUBLIC_API === true || localStorage.getItem("ignai_enable_public_api") === "1";
+  window.IGNAI_ENABLE_PUBLIC_API !== false &&
+  localStorage.getItem("ignai_enable_public_api") !== "0";
 const ENABLE_REGISTRATION_API =
-  window.IGNAI_ENABLE_REGISTRATION_API === true ||
-  localStorage.getItem("ignai_enable_registration_api") === "1";
+  window.IGNAI_ENABLE_REGISTRATION_API !== false &&
+  localStorage.getItem("ignai_enable_registration_api") !== "0";
 
 const demoTabs = {
   signup: {
@@ -326,8 +328,17 @@ async function hydrateCurrentEvent() {
 
   try {
     const event = await EventApi.current();
-    const meta = document.querySelectorAll(".event-meta strong");
 
+    // hero 标题
+    const heroTitle = document.getElementById("hero-title");
+    if (heroTitle && event?.title) heroTitle.textContent = event.title;
+
+    // hero 描述
+    const heroDesc = document.getElementById("hero-desc");
+    if (heroDesc && event?.description) heroDesc.textContent = event.description;
+
+    // event-meta：城市 / 形式 / 状态
+    const meta = document.querySelectorAll(".event-meta strong");
     if (meta[0] && event?.location) meta[0].textContent = event.location;
     if (meta[2]) meta[2].textContent = event?.registrationOpen === false ? "报名暂未开放" : "开放报名";
   } catch (error) {

@@ -8,6 +8,7 @@ import com.csust.hackathonserver.pojo.Events;
 import com.csust.hackathonserver.pojo.Projects;
 import com.csust.hackathonserver.service.EventsService;
 import com.csust.hackathonserver.service.ProjectsService;
+import com.github.pagehelper.PageInfo;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,7 +17,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @Slf4j
@@ -46,6 +49,36 @@ public class PublicController {
         eventVO.setRegistrationDeadline(currentEvent.getRegistrationDeadline());
         return Result.ok(eventVO);
     }
+
+    /**
+     * 分页查询活动列表
+     * GET /api/public/events?page=1&pageSize=10
+     */
+    @GetMapping("/events")
+    public Result listEvents(@RequestParam(value = "page", defaultValue = "1") int page,
+                             @RequestParam(value = "pageSize", defaultValue = "10") int pageSize) {
+        PageInfo<Events> pageInfo = eventsService.listEvents(page, pageSize);
+        List<Events> events = pageInfo.getList();
+        List<EventVO> eventVOs = new ArrayList<>();
+        for (Events e : events) {
+            EventVO vo = new EventVO();
+            vo.setId(e.getId());
+            vo.setTitle(e.getTitle());
+            vo.setSubtitle(e.getSubtitle());
+            vo.setLocation(e.getLocation());
+            vo.setDescription(e.getDescription());
+            vo.setRegistrationOpen(Integer.valueOf(1).equals(e.getRegistrationOpen()));
+            vo.setRegistrationDeadline(e.getRegistrationDeadline());
+            eventVOs.add(vo);
+        }
+        Map<String, Object> data = new HashMap<>();
+        data.put("list", eventVOs);
+        data.put("total", pageInfo.getTotal());
+        data.put("page", pageInfo.getPageNum());
+        data.put("pageSize", pageInfo.getPageSize());
+        return Result.ok(data);
+    }
+
     @GetMapping("/projects")
     public Result getPublicProjects(@RequestParam(value = "status", required = false) String status,
                               @RequestParam(value = "pageSize",required = false) Integer pageSize){

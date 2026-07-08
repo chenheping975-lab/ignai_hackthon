@@ -419,7 +419,7 @@ GET /api/public/projects?status=submitted&pageSize=2
         "trackName": "Agent Tools",
         "tagline": "面向高校实训的课程 Agent 与作品沉淀平台。",
         "description": "项目详细介绍",
-        "coverUrl": "./assets/img/local-global-embers.png",
+        "coverUrl": "./assets/img/local-global-embers.png"
       }
     ],
     "total": 1

@@ -5,6 +5,8 @@ import jdk.jfr.Event;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Select;
 
+import java.util.List;
+
 /**
 * @author 21201
 * @description 针对表【events】的数据库操作Mapper
@@ -14,8 +16,14 @@ import org.apache.ibatis.annotations.Select;
 @Mapper
 public interface EventsMapper {
 
-    @Select("select * from events where status = 'active' order by created_at desc limit 1")
+    @Select("select * from events where status = 'published' order by created_at desc limit 1")
     Events getCurrentEvent();
+
+    /**
+     * 查询所有活动（按创建时间倒序），供 PageHelper 分页拦截
+     */
+    @Select("select * from events order by created_at desc")
+    List<Events> findAll();
 }
 
 
