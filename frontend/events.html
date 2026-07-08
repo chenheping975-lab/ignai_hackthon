@@ -58,6 +58,7 @@
       </section>
     </main>
 
+    <script src="./node_modules/axios/dist/axios.min.js"></script>
     <script src="./assets/js/api.js"></script>
     <script>
       const ENABLE_PUBLIC_API =
@@ -82,15 +83,13 @@
         grid.innerHTML = "";
 
         try {
-          var resp = await fetch("/api/public/events?page=" + page + "&pageSize=6");
-          var json = await resp.json();
-          if (!json.success || !json.data || !json.data.list || !json.data.list.length) {
+          var data = await EventApi.list(page, 6);
+          if (!data || !data.list || !data.list.length) {
             loading.style.display = "none";
             empty.style.display = "block";
             return;
           }
 
-          var data = json.data;
           loading.style.display = "none";
 
           data.list.forEach(function (event) {

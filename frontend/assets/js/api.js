@@ -2,6 +2,27 @@ const API_BASE = "/api";
 const TOKEN_KEY = "ignai_access_token";
 const USER_KEY = "ignai_user";
 
+// ── axios 实例 ──
+const apiClient = axios.create({
+  baseURL: API_BASE,
+  headers: {
+    Accept: "application/json",
+  },
+});
+
+// ── 请求拦截器：自动附加 Token 与 Content-Type ──
+apiClient.interceptors.request.use((config) => {
+  const token = getToken();
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  if (config.data && !(config.data instanceof FormData)) {
+    config.headers["Content-Type"] = "application/json";
+  }
+  return config;
+});
+
+// ── Session 工具 ──
 function getToken() {
   return localStorage.getItem(TOKEN_KEY);
 }
@@ -36,53 +57,43 @@ function requireLogin() {
   return true;
 }
 
+// ── 通用请求函数 ──
 async function request(path, options = {}) {
-  const headers = {
-    Accept: "application/json",
-    ...(options.headers || {}),
-  };
-  const token = getToken();
-
-  if (token) {
-    headers.Authorization = `Bearer ${token}`;
-  }
-
-  let body = options.body;
-  if (body && !(body instanceof FormData)) {
-    headers["Content-Type"] = "application/json";
-    body = JSON.stringify(body);
-  }
-
   let response;
   try {
-    response = await fetch(`${API_BASE}${path}`, {
+    response = await apiClient({
+      url: path,
+      method: options.method || "GET",
+      data: options.body,
+      // 透传其他 axios 支持的选项（params、timeout 等）
       ...options,
-      headers,
-      body,
+      // 清除 fetch 专用字段
+      body: undefined,
+      headers: undefined,
     });
-  } catch {
+  } catch (error) {
+    if (error.response) {
+      // 服务端返回了错误状态码
+      if (error.response.status === 401) {
+        clearSession();
+        throw new Error("登录已失效，请重新登录。");
+      }
+      const payload = error.response.data;
+      throw new Error(payload.message || `请求失败：${error.response.status}`);
+    }
+    // 网络错误 / 无法连接
     throw new Error("无法连接后端服务，请确认 Spring Boot 已启动。");
   }
 
-  let payload;
-  try {
-    payload = await response.json();
-  } catch {
-    throw new Error("后端响应不是有效 JSON。");
-  }
-
-  if (response.status === 401) {
-    clearSession();
-    throw new Error("登录已失效，请重新登录。");
-  }
-
-  if (!response.ok || payload.success === false) {
-    throw new Error(payload.message || `请求失败：${response.status}`);
+  const payload = response.data;
+  if (payload.success === false) {
+    throw new Error(payload.message || "请求失败");
   }
 
   return payload.data;
 }
 
+// ── API 命名空间 ──
 const AuthApi = {
   register(data) {
     return request("/auth/register", { method: "POST", body: data });
@@ -104,6 +115,9 @@ const EventApi = {
   },
   tracks(eventId) {
     return request(`/public/events/${eventId}/tracks`);
+  },
+  list(page = 1, pageSize = 6) {
+    return request(`/public/events?page=${page}&pageSize=${pageSize}`);
   },
 };
 
