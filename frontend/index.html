@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="zh-CN">
+<html lang="zh-CN" class="dark">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -9,6 +9,23 @@
       content="IGNAI AI Skillathon：连接创造者，点燃可能性。长沙 AI 社区黑客松管理与作品展示平台。"
     />
     <link rel="icon" href="./assets/img/ignai-torch.png" />
+    <script>
+      // 预闪主题：避免 reload 时白屏一帧
+      (function () {
+        try {
+          var stored = localStorage.getItem("ignai-theme");
+          var system =
+            window.matchMedia &&
+            window.matchMedia("(prefers-color-scheme: light)").matches
+              ? "light"
+              : "dark";
+          var theme = stored || system;
+          var root = document.documentElement;
+          root.classList.remove("dark", "light");
+          root.classList.add(theme);
+        } catch (e) {}
+      })();
+    </script>
     <link rel="stylesheet" href="./assets/css/styles.css" />
   </head>
   <body>
@@ -21,9 +38,44 @@
         <a href="#action">行动</a>
         <a href="#journey">流程</a>
         <a href="#showcase">作品</a>
+        <a href="./events.html">活动</a>
         <a href="https://www.ignai.cn/" target="_blank" rel="noreferrer">官网</a>
       </nav>
-      <a class="header-cta" href="#apply">加入黑客松</a>
+      <div class="header-actions">
+        <div class="auth-widget" id="auth-widget" data-state="guest" aria-live="polite">
+          <a class="header-cta auth-guest" href="./login.html">登录</a>
+          <a class="outline-button auth-guest" href="./register.html">注册</a>
+          <div class="auth-authed auth-profile">
+            <span id="auth-role">参赛账号</span>
+            <strong id="auth-name">未登录</strong>
+          </div>
+          <button class="outline-button auth-authed" id="switch-account-button" type="button">切换账号</button>
+          <button class="header-cta auth-authed" id="logout-button" type="button">退出</button>
+        </div>
+        <button
+          class="theme-toggle"
+          id="theme-toggle"
+          type="button"
+          aria-label="切换明暗模式"
+          title="切换明暗模式"
+        >
+          <svg class="icon-moon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M13.3125 1.50001C12.675 1.31251 12.0375 1.16251 11.3625 1.05001C10.875 0.975006 10.35 1.23751 10.1625 1.68751C9.93751 2.13751 10.05 2.70001 10.425 3.00001C13.0875 5.47501 14.0625 9.11251 12.975 12.525C11.775 16.3125 8.25001 18.975 4.16251 19.0875C3.63751 19.0875 3.22501 19.425 3.07501 19.9125C2.92501 20.4 3.15001 20.925 3.56251 21.1875C4.50001 21.75 5.43751 22.2 6.37501 22.5C7.46251 22.8375 8.58751 22.9875 9.71251 22.9875C11.625 22.9875 13.5 22.5 15.1875 21.5625C17.85 20.1 19.725 17.7375 20.55 14.8875C22.1625 9.26251 18.975 3.37501 13.3125 1.50001ZM18.9375 14.4C18.2625 16.8375 16.6125 18.825 14.4 20.0625C12.075 21.3375 9.41251 21.6 6.90001 20.85C6.63751 20.775 6.33751 20.6625 6.07501 20.55C10.05 19.7625 13.35 16.9125 14.5875 13.0125C15.675 9.56251 15 5.92501 12.7875 3.07501C17.5875 4.68751 20.2875 9.67501 18.9375 14.4Z" />
+          </svg>
+          <svg class="icon-sun" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M12 6.89999C9.18752 6.89999 6.90002 9.18749 6.90002 12C6.90002 14.8125 9.18752 17.1 12 17.1C14.8125 17.1 17.1 14.8125 17.1 12C17.1 9.18749 14.8125 6.89999 12 6.89999ZM12 15.4125C10.125 15.4125 8.58752 13.875 8.58752 12C8.58752 10.125 10.125 8.58749 12 8.58749C13.875 8.58749 15.4125 10.125 15.4125 12C15.4125 13.875 13.875 15.4125 12 15.4125Z" />
+            <path d="M12 4.2375C12.45 4.2375 12.8625 3.8625 12.8625 3.375V1.5C12.8625 1.05 12.4875 0.637497 12 0.637497C11.55 0.637497 11.1375 1.0125 11.1375 1.5V3.4125C11.175 3.8625 11.55 4.2375 12 4.2375Z" />
+            <path d="M12 19.7625C11.55 19.7625 11.1375 20.1375 11.1375 20.625V22.5C11.1375 22.95 11.5125 23.3625 12 23.3625C12.45 23.3625 12.8625 22.9875 12.8625 22.5V20.5875C12.8625 20.1375 12.45 19.7625 12 19.7625Z" />
+            <path d="M18.1125 6.74999C18.3375 6.74999 18.5625 6.67499 18.7125 6.48749L19.9125 5.28749C20.25 4.94999 20.25 4.42499 19.9125 4.08749C19.575 3.74999 19.05 3.74999 18.7125 4.08749L17.5125 5.28749C17.175 5.62499 17.175 6.14999 17.5125 6.48749C17.6625 6.67499 17.8875 6.74999 18.1125 6.74999Z" />
+            <path d="M5.32501 17.5125L4.12501 18.675C3.78751 19.0125 3.78751 19.5375 4.12501 19.875C4.27501 20.025 4.50001 20.1375 4.72501 20.1375C4.95001 20.1375 5.17501 20.0625 5.32501 19.875L6.52501 18.675C6.86251 18.3375 6.86251 17.8125 6.52501 17.475C6.18751 17.175 5.62501 17.175 5.32501 17.5125Z" />
+            <path d="M22.5 11.175H20.5875C20.1375 11.175 19.725 11.55 19.725 12.0375C19.725 12.4875 20.1 12.9 20.5875 12.9H22.5C22.95 12.9 23.3625 12.525 23.3625 12.0375C23.3625 11.55 22.95 11.175 22.5 11.175Z" />
+            <path d="M4.23751 12C4.23751 11.55 3.86251 11.1375 3.37501 11.1375H1.50001C1.05001 11.1375 0.637512 11.5125 0.637512 12C0.637512 12.45 1.01251 12.8625 1.50001 12.8625H3.41251C3.86251 12.8625 4.23751 12.45 4.23751 12Z" />
+            <path d="M18.675 17.5125C18.3375 17.175 17.8125 17.175 17.475 17.5125C17.1375 17.85 17.1375 18.375 17.475 18.7125L18.675 19.9125C18.825 20.0625 19.05 20.175 19.275 20.175C19.5 20.175 19.725 20.1 19.875 19.9125C20.2125 19.575 20.2125 19.05 19.875 18.7125L18.675 17.5125Z" />
+            <path d="M5.32501 4.125C4.98751 3.7875 4.46251 3.7875 4.12501 4.125C3.78751 4.4625 3.78751 4.9875 4.12501 5.325L5.32501 6.525C5.47501 6.675 5.70001 6.7875 5.92501 6.7875C6.15001 6.7875 6.37501 6.7125 6.52501 6.525C6.86251 6.1875 6.86251 5.6625 6.52501 5.325L5.32501 4.125Z" />
+          </svg>
+        </button>
+        <a class="header-cta header-join" href="#apply">加入黑客松</a>
+      </div>
     </header>
 
     <main id="top">
@@ -31,22 +83,22 @@
         <div class="hero-gradient" aria-hidden="true"></div>
         <div class="hero-inner">
           <div class="hero-copy">
-            <p class="eyebrow">CHANGSHA AI COMMUNITY · AI SKILLATHON</p>
-            <h1>
+            <p class="eyebrow" data-reveal>CHANGSHA AI COMMUNITY · AI SKILLATHON</p>
+            <h1 data-reveal data-reveal-delay="1" id="hero-title">
               连接创造者，
               <br />
               点燃一场 AI 作品现场。
             </h1>
-            <p class="hero-lead">
+            <p class="hero-lead" data-reveal data-reveal-delay="2" id="hero-desc">
               IGNAI 把长沙的学生、开发者、设计师、创作者和创业者聚到一起。用两天一夜，把一个真正在意的问题做成可展示、可讨论、可继续迭代的 Demo。
             </p>
-            <div class="hero-actions">
+            <div class="hero-actions" data-reveal data-reveal-delay="3">
               <a class="primary-button" href="#apply">提交报名</a>
               <a class="outline-button" href="#showcase">查看作品</a>
             </div>
           </div>
 
-          <aside class="brand-stage" aria-label="IGNAI 黑客松品牌视觉">
+          <aside class="brand-stage" aria-label="IGNAI 黑客松品牌视觉" data-reveal data-reveal-delay="2">
             <img class="torch" src="./assets/img/ignai-torch.png" alt="" />
             <div class="stage-card">
               <span>IGNITE BEFORE AGI</span>
@@ -75,26 +127,26 @@
 
       <section class="section problem" id="why">
         <div class="section-copy">
-          <p class="eyebrow">THE PROBLEM</p>
-          <h2>AI 很热，但真正的连接很少。</h2>
+          <p class="eyebrow" data-reveal>THE PROBLEM</p>
+          <h2 data-reveal data-reveal-delay="1">AI 很热，但真正的连接很少。</h2>
         </div>
         <div class="card-grid four">
-          <article>
+          <article data-reveal data-reveal-delay="1">
             <span>001</span>
             <h3>信息过载</h3>
             <p>刷不完的 AI 资讯，却不知道从哪里开始做自己的第一个作品。</p>
           </article>
-          <article>
+          <article data-reveal data-reveal-delay="2">
             <span>002</span>
             <h3>孤独学习</h3>
             <p>一个人学 AI，进度慢、方向散，缺少同伴和真实反馈。</p>
           </article>
-          <article>
+          <article data-reveal data-reveal-delay="3">
             <span>003</span>
             <h3>纸上谈兵</h3>
             <p>看过很多教程，但真正走到 Demo、路演和用户反馈的机会不多。</p>
           </article>
-          <article>
+          <article data-reveal data-reveal-delay="4">
             <span>004</span>
             <h3>资源分散</h3>
             <p>本地有人才、有问题、有创意，需要一个让他们聚合的场。</p>
@@ -104,29 +156,29 @@
 
       <section class="section action" id="action">
         <div class="section-copy sticky-copy">
-          <p class="eyebrow">CAPABILITIES</p>
-          <h2>我们怎么行动。</h2>
-          <p>
+          <p class="eyebrow" data-reveal>CAPABILITIES</p>
+          <h2 data-reveal data-reveal-delay="1">我们怎么行动。</h2>
+          <p data-reveal data-reveal-delay="2">
             黑客松不是孤立活动，而是 IGNAI 社区行动方式的一次集中表达：面对面交流、组队共创、作品展示、内容沉淀。
           </p>
         </div>
         <div class="action-list">
-          <article>
+          <article data-reveal>
             <span>[ 01 ]</span>
             <h3>线下活动，真实碰撞。</h3>
             <p>分享会、黑客松、项目路演，让想法在现场被看见、被质疑、被推进。</p>
           </article>
-          <article>
+          <article data-reveal data-reveal-delay="1">
             <span>[ 02 ]</span>
             <h3>项目共创，从 0 到 1。</h3>
             <p>个人可以现场组队，团队可以带着方向进入冲刺，围绕 AI 做出能跑的东西。</p>
           </article>
-          <article>
+          <article data-reveal data-reveal-delay="2">
             <span>[ 03 ]</span>
             <h3>内容输出，放大信号。</h3>
             <p>作品页、复盘记录、工具清单和项目故事，成为赛后继续传播的内容资产。</p>
           </article>
-          <article>
+          <article data-reveal data-reveal-delay="3">
             <span>[ 04 ]</span>
             <h3>开放文化，人人可参与。</h3>
             <p>学生、开发者、设计师、创业者、内容创作者，只要对 AI 有热情，都有位置。</p>
@@ -136,29 +188,29 @@
 
       <section class="section journey" id="journey">
         <div class="section-copy">
-          <p class="eyebrow">48 HOURS</p>
-          <h2>两天一夜，把灵感推进到作品。</h2>
-          <p>
+          <p class="eyebrow" data-reveal>48 HOURS</p>
+          <h2 data-reveal data-reveal-delay="1">两天一夜，把灵感推进到作品。</h2>
+          <p data-reveal data-reveal-delay="2">
             前台是一场活动，后台是一套流程。报名、组队、审核、提交、评分和飞书备份都服务于一个目标：让作品顺利发生。
           </p>
         </div>
         <div class="timeline">
-          <div class="timeline-item">
+          <div class="timeline-item" data-reveal>
             <span>01</span>
             <strong>报名与组队</strong>
             <p>支持个人和团队报名，AI 辅助整理标签，管理员审核后发送通知。</p>
           </div>
-          <div class="timeline-item">
+          <div class="timeline-item" data-reveal data-reveal-delay="1">
             <span>02</span>
             <strong>现场冲刺</strong>
             <p>围绕 Agent、产品原型、内容工具和真实业务场景推进 Demo。</p>
           </div>
-          <div class="timeline-item">
+          <div class="timeline-item" data-reveal data-reveal-delay="2">
             <span>03</span>
             <strong>作品提交</strong>
             <p>提交项目说明、Demo 链接、代码链接、PPT/HTML/MP3/图片等资料。</p>
           </div>
-          <div class="timeline-item">
+          <div class="timeline-item" data-reveal data-reveal-delay="3">
             <span>04</span>
             <strong>展示与曝光</strong>
             <p>作品进入线上展示页，开放评分与投票，赛后仍可回看和传播。</p>
@@ -168,14 +220,14 @@
 
       <section class="section showcase" id="showcase">
         <div class="section-copy">
-          <p class="eyebrow">PROJECT SHOWCASE</p>
-          <h2>作品不只在现场闪一下。</h2>
-          <p>
+          <p class="eyebrow" data-reveal>PROJECT SHOWCASE</p>
+          <h2 data-reveal data-reveal-delay="1">作品不只在现场闪一下。</h2>
+          <p data-reveal data-reveal-delay="2">
             作品展示参考对标站的信息结构，但视觉回到 IGNAI：火炬、暖色、真实连接和内容沉淀。MVP 不引入视频上传。
           </p>
         </div>
         <div class="project-grid">
-          <article class="project-card">
+          <article class="project-card" data-reveal data-reveal-delay="1">
             <img src="./assets/img/local-global-embers.png" alt="Local global signal visual" />
             <div>
               <span>Agent Tools</span>
@@ -184,7 +236,7 @@
               <footer><strong>4.7</strong><small>128 votes</small></footer>
             </div>
           </article>
-          <article class="project-card">
+          <article class="project-card" data-reveal data-reveal-delay="2">
             <img src="./assets/img/ignai-business-card-mockup.webp" alt="IGNAI brand visual" />
             <div>
               <span>Productivity</span>
@@ -197,21 +249,45 @@
       </section>
 
       <section class="platform-layer" id="apply">
-        <div class="platform-card">
+        <div class="platform-card" data-reveal>
           <p class="eyebrow">BEHIND THE STAGE</p>
           <h2>台前是火种，幕后是流程。</h2>
           <p>
             管理平台要隐在活动体验后面：收报名、打标签、发邮件、收作品、开放评分、备份飞书，最后把作品和故事留下来。
           </p>
-          <div class="system-flow">
-            <span>报名</span>
-            <span>AI 标签</span>
-            <span>审核通知</span>
-            <span>作品提交</span>
-            <span>开放评分</span>
-            <span>飞书备份</span>
+          <div class="platform-grid">
+            <div class="system-flow">
+              <span>报名</span>
+              <span>AI 标签</span>
+              <span>审核通知</span>
+              <span>作品提交</span>
+              <span>开放评分</span>
+              <span>飞书备份</span>
+            </div>
+
+            <section class="demo-console" aria-label="黑客松平台交互原型">
+              <div class="demo-console-head">
+                <div>
+                  <span>Interactive Demo</span>
+                  <strong>参赛流程控制台</strong>
+                </div>
+                <small id="demo-session-label">未登录预览</small>
+              </div>
+              <div class="demo-tabs" role="tablist" aria-label="流程模块">
+                <button class="active" type="button" data-demo-tab="signup">报名</button>
+                <button type="button" data-demo-tab="project">作品</button>
+                <button type="button" data-demo-tab="rating">评分</button>
+                <button type="button" data-demo-tab="feishu">飞书</button>
+              </div>
+              <div class="demo-panel" id="demo-panel"></div>
+            </section>
           </div>
-          <a class="primary-button" href="https://www.ignai.cn/join" target="_blank" rel="noreferrer">加入 IGNAI</a>
+
+          <div class="apply-actions">
+            <button class="primary-button" id="submit-registration-button" type="button">提交报名 Demo</button>
+            <button class="outline-button" id="login-or-switch-button" type="button">登录 / 切换账号</button>
+            <p id="apply-feedback" role="status">登录后可提交报名；未连接后端时会进入本地 Demo 模式。</p>
+          </div>
         </div>
       </section>
     </main>
@@ -223,6 +299,7 @@
       <a href="./../docs/pdf/黑客松管理平台-研发说明书-v0.3.pdf">研发说明书</a>
     </footer>
 
+    <script src="./assets/js/api.js"></script>
     <script src="./assets/js/app.js"></script>
   </body>
 </html>

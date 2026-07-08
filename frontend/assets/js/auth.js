@@ -89,7 +89,50 @@ function bindRegister() {
   });
 }
 
+function renderExistingSessionNotice() {
+  const params = new URLSearchParams(window.location.search);
+  if (params.get("switch") === "1") {
+    clearSession();
+    setMessage("auth-message", "已退出当前账号，可以登录新账号。", "success");
+    return;
+  }
+
+  const user = getUser();
+  if (!getToken() || !user) return;
+
+  const card = document.querySelector(".auth-card");
+  if (!card || document.querySelector(".auth-session")) return;
+
+  const notice = document.createElement("div");
+  notice.className = "auth-session";
+
+  const userBlock = document.createElement("div");
+  const label = document.createElement("span");
+  const name = document.createElement("strong");
+  const clearButton = document.createElement("button");
+  const backLink = document.createElement("a");
+
+  label.textContent = "当前已登录";
+  name.textContent = user.name || user.phone || user.email || "参赛者";
+  clearButton.type = "button";
+  clearButton.dataset.authClear = "";
+  clearButton.textContent = "切换账号";
+  backLink.href = "./index.html#apply";
+  backLink.textContent = "返回报名";
+
+  userBlock.append(label, name);
+  notice.append(userBlock, clearButton, backLink);
+  card.prepend(notice);
+
+  notice.querySelector("[data-auth-clear]")?.addEventListener("click", () => {
+    clearSession();
+    setMessage("auth-message", "已退出当前账号，可以登录新账号。", "success");
+    notice.remove();
+  });
+}
+
 document.addEventListener("DOMContentLoaded", () => {
+  renderExistingSessionNotice();
   bindLogin();
   bindRegister();
 });
