@@ -1,6 +1,14 @@
 ﻿# IGNAI Hackathon 前后端联调接口文档
 
+版本：v0.4
+更新日期：2026-07-08
+
 本文档只覆盖当前前端静态页面需要调用的接口。后端可使用 Spring Boot + MyBatis + Lombok + MySQL 实现。
+
+后台管理系统、root 入口、报名 AI 初筛、邮件 Agent、项目看板和点赞展示的完整 API 规划见：
+
+- `docs/03-API端口与接口设计.md`
+- `api/openapi.yaml`
 
 > 说明：文档里的“请求类 / 响应类”是给 Controller 使用的 DTO / VO，不一定等于数据库实体类。真正操作数据库时，再由 Service 把 Request DTO 转成 Entity。
 
@@ -76,9 +84,9 @@ Authorization: Bearer <accessToken>
 | `POST /api/auth/register` | `AuthController` | `RegisterRequest` | `UserVO` | `Users` | `users` |
 | `POST /api/auth/login` | `AuthController` | `LoginRequest` | `LoginResponse` | `Users` | `users` |
 | `GET /api/auth/me` | `AuthController` | 无 | `UserVO` | `Users` | `users` |
-| `GET /api/public/events/current` | `EventsController` | 无 | `EventVO` | `Events` | `events` |
-| `GET /api/public/projects` | `ProjectsController` | 查询参数 | `ProjectListResponse` | `Projects` | `projects` |
-| `POST /api/registrations` | `RegistrationsController` | `RegistrationRequest` | `RegistrationVO` | `Registrations` | `registrations` |
+| `GET /api/public/events/current` | `PublicController` | 无 | `EventVO` | `Events` | `events` |
+| `GET /api/public/projects` | `PublicController` | 查询参数 | `ProjectListResponse` | `Projects` | `projects` |
+| `POST /api/public/events/{eventId}/registrations` | `RegistrationsController` | `RegistrationRequest` | `RegistrationVO` | `Registrations` | `registrations` |
 
 > 如果你生成出来的实体类名字是 `User`、`Event`、`Project`、`Registration` 这种单数形式，就按你项目实际类名来。截图里你的 Controller 是复数形式，所以这里按 `Users / Events / Projects / Registrations` 写。
 

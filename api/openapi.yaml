@@ -1,13 +1,16 @@
 openapi: 3.0.3
 info:
   title: IGNAI Hackathon Platform API
-  version: 0.3.0
+  version: 0.4.0
   description: >
-    Java Web / Servlet 版本接口设计。MVP 无评委角色，无视频上传，评分为开放评分。
+    Spring Boot / MyBatis 版本接口规划。MVP 无独立评委角色，无视频上传；
+    后台管理入口规划为 /root/，root 初始化和认证使用 /api/root/*。
 servers:
   - url: http://localhost:8080/api
-    description: Local Java Web API
+    description: Local Spring Boot API
 tags:
+  - name: Root
+  - name: Auth
   - name: Public
   - name: Admin
   - name: Registration
@@ -23,6 +26,134 @@ paths:
       responses:
         "200":
           description: OK
+
+  /auth/register:
+    post:
+      tags: [Auth]
+      summary: 参赛者注册
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegisterRequest"
+      responses:
+        "200":
+          description: 注册成功
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserResponse"
+
+  /auth/login:
+    post:
+      tags: [Auth]
+      summary: 参赛者登录
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+      responses:
+        "200":
+          description: 登录成功
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LoginResponse"
+
+  /root/setup-status:
+    get:
+      tags: [Root]
+      summary: 检查 root 是否已初始化
+      responses:
+        "200":
+          description: 初始化状态
+
+  /root/bootstrap:
+    post:
+      tags: [Root]
+      summary: 首次设置 root 密码和创始人邮箱
+      description: 只能在系统未初始化 root 时调用一次。
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RootBootstrapRequest"
+      responses:
+        "200":
+          description: root 初始化成功
+        "409":
+          description: root 已初始化
+
+  /root/login:
+    post:
+      tags: [Root]
+      summary: root 登录后台
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+      responses:
+        "200":
+          description: 登录成功
+
+  /root/logout:
+    post:
+      tags: [Root]
+      summary: root 退出
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: 已退出
+
+  /root/me:
+    get:
+      tags: [Root]
+      summary: 当前 root 信息
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: root 信息
+
+  /root/password:
+    patch:
+      tags: [Root]
+      summary: 修改 root 密码
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PasswordChangeRequest"
+      responses:
+        "200":
+          description: 修改成功
+
+  /root/owner-email:
+    patch:
+      tags: [Root]
+      summary: 更换创始人邮箱
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OwnerEmailChangeRequest"
+      responses:
+        "200":
+          description: 修改成功
+
   /public/events/current:
     get:
       tags: [Public]
@@ -34,19 +165,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/EventResponse"
-  /public/events/{eventId}/tracks:
-    get:
-      tags: [Public]
-      summary: 获取赛道列表
-      parameters:
-        - $ref: "#/components/parameters/EventId"
-      responses:
-        "200":
-          description: 赛道列表
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ListResponse"
+
   /public/events/{eventId}/form-fields:
     get:
       tags: [Public]
@@ -62,16 +181,15 @@ paths:
       responses:
         "200":
           description: 字段列表
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ListResponse"
+
   /public/events/{eventId}/registrations:
     post:
       tags: [Registration]
       summary: 提交报名
       parameters:
         - $ref: "#/components/parameters/EventId"
+      security:
+        - bearerAuth: []
       requestBody:
         required: true
         content:
@@ -81,137 +199,133 @@ paths:
       responses:
         "200":
           description: 报名成功
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/RegistrationResponse"
         "409":
           description: 重复报名
-  /admin/login:
-    post:
-      tags: [Admin]
-      summary: 管理员登录
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required: [account, password]
-              properties:
-                account:
-                  type: string
-                password:
-                  type: string
-      responses:
-        "200":
-          description: 登录成功
-  /admin/logout:
-    post:
-      tags: [Admin]
-      summary: 管理员退出
-      responses:
-        "200":
-          description: 已退出
-  /admin/events:
+
+  /public/projects:
     get:
-      tags: [Admin]
-      summary: 活动列表
-      responses:
-        "200":
-          description: 活动列表
-    post:
-      tags: [Admin]
-      summary: 创建活动
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/EventUpsertRequest"
-      responses:
-        "200":
-          description: 创建成功
-  /admin/events/{eventId}:
-    put:
-      tags: [Admin]
-      summary: 更新活动
-      parameters:
-        - $ref: "#/components/parameters/EventId"
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/EventUpsertRequest"
-      responses:
-        "200":
-          description: 更新成功
-  /admin/events/{eventId}/form-fields:
-    put:
-      tags: [Admin]
-      summary: 保存表单字段
-      parameters:
-        - $ref: "#/components/parameters/EventId"
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required: [targetType, fields]
-              properties:
-                targetType:
-                  type: string
-                  enum: [registration, project]
-                fields:
-                  type: array
-                  items:
-                    $ref: "#/components/schemas/FormField"
-      responses:
-        "200":
-          description: 保存成功
-  /admin/registrations:
-    get:
-      tags: [Registration]
-      summary: 报名列表
+      tags: [Project]
+      summary: 公开作品列表
       parameters:
         - name: status
           in: query
           schema:
             type: string
-            enum: [pending, approved, rejected, waitlist, cancelled]
+            enum: [published, submitted]
+        - name: trackId
+          in: query
+          schema:
+            type: integer
+        - name: sort
+          in: query
+          schema:
+            type: string
+            enum: [latest, votes, rating, featured]
+        - name: pageSize
+          in: query
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: 作品列表
+
+  /public/projects/{projectId}:
+    get:
+      tags: [Project]
+      summary: 公开作品详情
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+      responses:
+        "200":
+          description: 作品详情
+
+  /public/projects/{projectId}/votes:
+    post:
+      tags: [Rating]
+      summary: 登录用户点赞作品
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+      responses:
+        "200":
+          description: 点赞成功
+        "409":
+          description: 重复点赞
+
+  /public/projects/{projectId}/ratings:
+    post:
+      tags: [Rating]
+      summary: 开放评分
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RatingCreateRequest"
+      responses:
+        "200":
+          description: 评分成功
+        "409":
+          description: 重复评分
+
+  /admin/dashboard:
+    get:
+      tags: [Admin]
+      summary: 后台概览统计
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: 统计数据
+
+  /admin/users:
+    get:
+      tags: [Admin]
+      summary: 用户表
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: role
+          in: query
+          schema:
+            type: string
+            enum: [root, admin, participant]
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [active, disabled]
         - name: keyword
           in: query
           schema:
             type: string
       responses:
         "200":
-          description: 报名列表
-  /admin/registrations/{registrationId}:
+          description: 用户列表
+
+  /admin/users/{userId}:
     get:
-      tags: [Registration]
-      summary: 报名详情
+      tags: [Admin]
+      summary: 用户详情
+      security:
+        - bearerAuth: []
       parameters:
-        - $ref: "#/components/parameters/RegistrationId"
+        - $ref: "#/components/parameters/UserId"
       responses:
         "200":
-          description: 报名详情
-  /admin/registrations/{registrationId}/ai-tags:
-    post:
-      tags: [Registration]
-      summary: 触发 AI 标签与摘要
-      parameters:
-        - $ref: "#/components/parameters/RegistrationId"
-      responses:
-        "200":
-          description: AI 任务已创建
-  /admin/registrations/{registrationId}/review:
+          description: 用户详情
+
+  /admin/users/{userId}/status:
     patch:
-      tags: [Registration]
-      summary: 审核报名
+      tags: [Admin]
+      summary: 启用或禁用用户
+      security:
+        - bearerAuth: []
       parameters:
-        - $ref: "#/components/parameters/RegistrationId"
+        - $ref: "#/components/parameters/UserId"
       requestBody:
         required: true
         content:
@@ -222,85 +336,352 @@ paths:
               properties:
                 status:
                   type: string
+                  enum: [active, disabled]
+      responses:
+        "200":
+          description: 更新成功
+
+  /admin/users/admins:
+    post:
+      tags: [Admin]
+      summary: root 创建管理员账号
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AdminCreateRequest"
+      responses:
+        "200":
+          description: 创建成功
+
+  /admin/events:
+    get:
+      tags: [Admin]
+      summary: 活动列表
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: 活动列表
+    post:
+      tags: [Admin]
+      summary: 创建活动
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EventUpsertRequest"
+      responses:
+        "200":
+          description: 创建成功
+
+  /admin/events/{eventId}:
+    put:
+      tags: [Admin]
+      summary: 更新活动
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EventId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EventUpsertRequest"
+      responses:
+        "200":
+          description: 更新成功
+
+  /admin/events/{eventId}/windows:
+    patch:
+      tags: [Admin]
+      summary: 设置报名、提交、评分和点赞窗口
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EventId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EventWindowRequest"
+      responses:
+        "200":
+          description: 保存成功
+
+  /admin/events/{eventId}/tracks:
+    get:
+      tags: [Admin]
+      summary: 赛道列表
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EventId"
+      responses:
+        "200":
+          description: 赛道列表
+    post:
+      tags: [Admin]
+      summary: 新增赛道
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EventId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TrackCreateRequest"
+      responses:
+        "200":
+          description: 创建成功
+
+  /admin/events/{eventId}/form-fields:
+    put:
+      tags: [Admin]
+      summary: 保存报名或作品自定义字段
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EventId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FormFieldSaveRequest"
+      responses:
+        "200":
+          description: 保存成功
+
+  /admin/registrations:
+    get:
+      tags: [Registration]
+      summary: 报名列表
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [pending, approved, rejected, waitlist, cancelled]
+        - name: trackId
+          in: query
+          schema:
+            type: integer
+        - name: aiTag
+          in: query
+          schema:
+            type: string
+        - name: keyword
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: 报名列表
+
+  /admin/registrations/{registrationId}:
+    get:
+      tags: [Registration]
+      summary: 报名详情
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/RegistrationId"
+      responses:
+        "200":
+          description: 报名详情
+
+  /admin/registrations/{registrationId}/ai-screen:
+    post:
+      tags: [Registration]
+      summary: 触发 AI 初筛、标签和摘要
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/RegistrationId"
+      responses:
+        "200":
+          description: AI 任务已创建或返回结果
+
+  /admin/registrations/{registrationId}/review:
+    patch:
+      tags: [Registration]
+      summary: 审核报名
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/RegistrationId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegistrationReviewRequest"
+      responses:
+        "200":
+          description: 审核成功
+
+  /admin/registrations/batch-review:
+    post:
+      tags: [Registration]
+      summary: 批量审核报名
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [registrationIds, status]
+              properties:
+                registrationIds:
+                  type: array
+                  items:
+                    type: integer
+                status:
+                  type: string
                   enum: [approved, rejected, waitlist]
                 note:
                   type: string
       responses:
         "200":
-          description: 审核成功
+          description: 批量审核成功
+
+  /admin/registrations/{registrationId}/mail-draft:
+    post:
+      tags: [Mail]
+      summary: 基于报名信息生成个性化邮件草稿
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/RegistrationId"
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                scene:
+                  type: string
+                  enum: [approved, rejected, waitlist, reminder, custom]
+                templateId:
+                  type: integer
+      responses:
+        "200":
+          description: 邮件草稿
+
   /admin/mail/templates:
     get:
       tags: [Mail]
       summary: 邮件模板列表
+      security:
+        - bearerAuth: []
       responses:
         "200":
           description: 模板列表
     post:
       tags: [Mail]
       summary: 创建邮件模板
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MailTemplateRequest"
       responses:
         "200":
           description: 创建成功
-  /admin/mail/drafts:
-    post:
+
+  /admin/mail/templates/{templateId}:
+    put:
       tags: [Mail]
-      summary: 生成邮件草稿
+      summary: 更新邮件模板
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: templateId
+          in: path
+          required: true
+          schema:
+            type: integer
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              type: object
-              required: [scene, targetType, targetId]
-              properties:
-                scene:
-                  type: string
-                targetType:
-                  type: string
-                targetId:
-                  type: integer
+              $ref: "#/components/schemas/MailTemplateRequest"
       responses:
         "200":
-          description: 草稿内容
+          description: 更新成功
+
   /admin/mail/send:
     post:
       tags: [Mail]
-      summary: 人工确认后发送邮件
+      summary: 管理员确认后发送邮件
+      security:
+        - bearerAuth: []
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              type: object
-              required: [recipientEmail, subject, body]
-              properties:
-                recipientEmail:
-                  type: string
-                subject:
-                  type: string
-                body:
-                  type: string
+              $ref: "#/components/schemas/MailSendRequest"
       responses:
         "200":
           description: 已发送或进入发送队列
+
+  /admin/mail/logs:
+    get:
+      tags: [Mail]
+      summary: 邮件发送记录
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: 邮件日志
+
   /teams:
     post:
       tags: [Project]
       summary: 创建或加入队伍
+      security:
+        - bearerAuth: []
       responses:
         "200":
           description: 队伍信息
+
   /teams/me:
     get:
       tags: [Project]
       summary: 当前用户队伍
+      security:
+        - bearerAuth: []
       responses:
         "200":
           description: 队伍详情
+
   /projects:
     post:
       tags: [Project]
       summary: 创建或保存作品
+      security:
+        - bearerAuth: []
       requestBody:
         required: true
         content:
@@ -310,20 +691,36 @@ paths:
       responses:
         "200":
           description: 作品信息
+
+  /projects/my:
+    get:
+      tags: [Project]
+      summary: 我的作品
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: 当前用户作品
+
   /projects/{projectId}:
     put:
       tags: [Project]
       summary: 更新作品
+      security:
+        - bearerAuth: []
       parameters:
         - $ref: "#/components/parameters/ProjectId"
       responses:
         "200":
           description: 更新成功
+
   /projects/{projectId}/files:
     post:
       tags: [Project]
       summary: 上传附件
       description: MVP 不允许上传视频文件。
+      security:
+        - bearerAuth: []
       parameters:
         - $ref: "#/components/parameters/ProjectId"
       requestBody:
@@ -341,20 +738,31 @@ paths:
           description: 上传成功
         "400":
           description: 文件类型不允许
+
   /projects/{projectId}/submit:
     post:
       tags: [Project]
       summary: 正式提交作品
+      security:
+        - bearerAuth: []
       parameters:
         - $ref: "#/components/parameters/ProjectId"
       responses:
         "200":
           description: 提交成功
-  /public/projects:
+
+  /admin/projects:
     get:
       tags: [Project]
-      summary: 公开作品列表
+      summary: 后台项目看板
+      security:
+        - bearerAuth: []
       parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [draft, submitted, locked, published, archived]
         - name: trackId
           in: query
           schema:
@@ -363,51 +771,33 @@ paths:
           in: query
           schema:
             type: string
-            enum: [latest, rating, votes]
+            enum: [latest, votes, rating]
+        - name: keyword
+          in: query
+          schema:
+            type: string
       responses:
         "200":
-          description: 作品列表
-  /public/projects/{projectId}:
+          description: 项目列表
+
+  /admin/projects/{projectId}:
     get:
       tags: [Project]
-      summary: 公开作品详情
+      summary: 后台项目详情
+      security:
+        - bearerAuth: []
       parameters:
         - $ref: "#/components/parameters/ProjectId"
       responses:
         "200":
-          description: 作品详情
-  /public/projects/{projectId}/ratings:
-    post:
-      tags: [Rating]
-      summary: 开放评分
-      parameters:
-        - $ref: "#/components/parameters/ProjectId"
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required: [score, raterKey]
-              properties:
-                score:
-                  type: number
-                  minimum: 1
-                  maximum: 5
-                raterKey:
-                  type: string
-                sourceType:
-                  type: string
-                  enum: [public, participant, onsite_code]
-      responses:
-        "200":
-          description: 评分成功
-        "409":
-          description: 重复评分
-  /public/projects/{projectId}/votes:
-    post:
-      tags: [Rating]
-      summary: 投票
+          description: 项目详情
+
+  /admin/projects/{projectId}/status:
+    patch:
+      tags: [Project]
+      summary: 更新项目状态
+      security:
+        - bearerAuth: []
       parameters:
         - $ref: "#/components/parameters/ProjectId"
       requestBody:
@@ -416,54 +806,65 @@ paths:
           application/json:
             schema:
               type: object
-              required: [voterKey]
+              required: [status]
               properties:
-                voterKey:
+                status:
                   type: string
-                sourceType:
-                  type: string
-                  enum: [public, participant, onsite_code]
+                  enum: [draft, submitted, locked, published, archived]
       responses:
         "200":
-          description: 投票成功
-        "409":
-          description: 重复投票
+          description: 更新成功
+
+  /admin/projects/{projectId}/showcase:
+    patch:
+      tags: [Project]
+      summary: 设置作品展示规则
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProjectShowcaseRequest"
+      responses:
+        "200":
+          description: 保存成功
+
   /admin/feishu/sync:
     post:
       tags: [Feishu]
       summary: 创建飞书同步任务
+      security:
+        - bearerAuth: []
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              type: object
-              required: [targetType, targetIds, syncType]
-              properties:
-                targetType:
-                  type: string
-                  enum: [registration, team, project, project_file, mail_log]
-                targetIds:
-                  type: array
-                  items:
-                    type: integer
-                syncType:
-                  type: string
-                  enum: [base, drive, board, export]
+              $ref: "#/components/schemas/FeishuSyncRequest"
       responses:
         "200":
           description: 同步任务已创建
+
   /admin/feishu/logs:
     get:
       tags: [Feishu]
       summary: 飞书同步日志
+      security:
+        - bearerAuth: []
       responses:
         "200":
           description: 同步日志
+
   /admin/feishu/logs/{logId}/retry:
     post:
       tags: [Feishu]
       summary: 重试飞书同步
+      security:
+        - bearerAuth: []
       parameters:
         - name: logId
           in: path
@@ -473,7 +874,13 @@ paths:
       responses:
         "200":
           description: 重试任务已创建
+
 components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
   parameters:
     EventId:
       name: eventId
@@ -493,19 +900,97 @@ components:
       required: true
       schema:
         type: integer
+    UserId:
+      name: userId
+      in: path
+      required: true
+      schema:
+        type: integer
   schemas:
     ApiResponse:
       type: object
       properties:
         success:
           type: boolean
+        errorCode:
+          type: string
+          nullable: true
         message:
           type: string
         data:
           type: object
-    ListResponse:
+          nullable: true
+    RegisterRequest:
+      type: object
+      required: [name, phone, password]
+      properties:
+        name:
+          type: string
+        phone:
+          type: string
+        email:
+          type: string
+        password:
+          type: string
+    LoginRequest:
+      type: object
+      required: [account, password]
+      properties:
+        account:
+          type: string
+        password:
+          type: string
+    LoginResponse:
       allOf:
         - $ref: "#/components/schemas/ApiResponse"
+    UserResponse:
+      allOf:
+        - $ref: "#/components/schemas/ApiResponse"
+    RootBootstrapRequest:
+      type: object
+      required: [ownerEmail, password]
+      properties:
+        ownerEmail:
+          type: string
+          format: email
+        password:
+          type: string
+          minLength: 8
+        name:
+          type: string
+          default: IGNAI Root
+    PasswordChangeRequest:
+      type: object
+      required: [oldPassword, newPassword]
+      properties:
+        oldPassword:
+          type: string
+        newPassword:
+          type: string
+          minLength: 8
+    OwnerEmailChangeRequest:
+      type: object
+      required: [password, ownerEmail]
+      properties:
+        password:
+          type: string
+        ownerEmail:
+          type: string
+          format: email
+    AdminCreateRequest:
+      type: object
+      required: [name, email, password]
+      properties:
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+        phone:
+          type: string
+        password:
+          type: string
+          minLength: 8
     EventResponse:
       allOf:
         - $ref: "#/components/schemas/ApiResponse"
@@ -521,16 +1006,55 @@ components:
           type: string
         description:
           type: string
+        status:
+          type: string
+          enum: [draft, published, running, archived]
+        officialSiteUrl:
+          type: string
+        benchmarkSiteUrl:
+          type: string
+    EventWindowRequest:
+      type: object
+      properties:
+        registrationOpen:
+          type: boolean
+        ratingEnabled:
+          type: boolean
+        voteEnabled:
+          type: boolean
         registrationDeadline:
           type: string
           format: date-time
         submissionDeadline:
           type: string
           format: date-time
-        ratingEnabled:
-          type: boolean
-        voteEnabled:
-          type: boolean
+        ratingStartAt:
+          type: string
+          format: date-time
+        ratingEndAt:
+          type: string
+          format: date-time
+    TrackCreateRequest:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        sortOrder:
+          type: integer
+    FormFieldSaveRequest:
+      type: object
+      required: [targetType, fields]
+      properties:
+        targetType:
+          type: string
+          enum: [registration, project]
+        fields:
+          type: array
+          items:
+            $ref: "#/components/schemas/FormField"
     FormField:
       type: object
       required: [fieldKey, label, fieldType]
@@ -548,8 +1072,12 @@ components:
           type: array
           items:
             type: string
+        placeholder:
+          type: string
         sortOrder:
           type: integer
+        enabled:
+          type: boolean
     RegistrationCreateRequest:
       type: object
       required: [registrationType, contactName, contactPhone]
@@ -573,9 +1101,54 @@ components:
             type: object
         payload:
           type: object
-    RegistrationResponse:
-      allOf:
-        - $ref: "#/components/schemas/ApiResponse"
+    RegistrationReviewRequest:
+      type: object
+      required: [status]
+      properties:
+        status:
+          type: string
+          enum: [approved, rejected, waitlist]
+        note:
+          type: string
+        generateMailDraft:
+          type: boolean
+    MailTemplateRequest:
+      type: object
+      required: [eventId, scene, name, subjectTemplate, bodyTemplate]
+      properties:
+        eventId:
+          type: integer
+        scene:
+          type: string
+          enum: [approved, rejected, waitlist, reminder, custom]
+        name:
+          type: string
+        subjectTemplate:
+          type: string
+        bodyTemplate:
+          type: string
+        enabled:
+          type: boolean
+    MailSendRequest:
+      type: object
+      required: [recipientEmail, subject, body]
+      properties:
+        eventId:
+          type: integer
+        templateId:
+          type: integer
+        targetType:
+          type: string
+          enum: [registration, team, project, custom]
+        targetId:
+          type: integer
+        recipientEmail:
+          type: string
+          format: email
+        subject:
+          type: string
+        body:
+          type: string
     ProjectUpsertRequest:
       type: object
       required: [eventId, teamId, title]
@@ -596,3 +1169,43 @@ components:
           type: string
         codeUrl:
           type: string
+        payload:
+          type: object
+    ProjectShowcaseRequest:
+      type: object
+      properties:
+        published:
+          type: boolean
+        featured:
+          type: boolean
+        sortWeight:
+          type: integer
+        showcaseNote:
+          type: string
+    RatingCreateRequest:
+      type: object
+      required: [score, raterKey]
+      properties:
+        score:
+          type: number
+          minimum: 1
+          maximum: 5
+        raterKey:
+          type: string
+        sourceType:
+          type: string
+          enum: [public, participant, onsite_code]
+    FeishuSyncRequest:
+      type: object
+      required: [targetType, targetIds, syncType]
+      properties:
+        targetType:
+          type: string
+          enum: [registration, team, project, project_file, mail_log]
+        targetIds:
+          type: array
+          items:
+            type: integer
+        syncType:
+          type: string
+          enum: [base, drive, board, export]
