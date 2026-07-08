@@ -226,7 +226,7 @@ function bindAuthActions() {
 }
 
 function bindBusinessEntryLinks() {
-  document.querySelectorAll('a[href="#apply"], .hero-actions .primary-button').forEach((link) => {
+  document.querySelectorAll('a[href="#apply"], [data-scroll-apply]').forEach((link) => {
     link.addEventListener("click", (event) => {
       event.preventDefault();
       document.querySelector("#apply")?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -459,7 +459,7 @@ function bindRevealMotion() {
 function bindCardHoverGlow() {
   // 卡片鼠标位置 → CSS 变量 --mx / --my，触发 radial 光晕跟随
   const cards = document.querySelectorAll(
-    ".card-grid article, .action-list article, .project-card"
+    ".card-grid article, .action-list article, .project-card, .event-card, .track-grid article, .project-showcase-card"
   );
   cards.forEach((card) => {
     card.addEventListener("pointermove", (event) => {

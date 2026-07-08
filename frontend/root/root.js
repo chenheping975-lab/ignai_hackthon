@@ -4,10 +4,38 @@ const state = {
   previewRole: "guest",
   previewPhase: "registration",
   fields: [
-    { label: "姓名", type: "text", required: true },
-    { label: "手机号", type: "text", required: true },
-    { label: "关注赛道", type: "select", required: true },
-    { label: "你想解决什么问题？", type: "textarea", required: true },
+    {
+      id: "name",
+      label: "姓名",
+      type: "text",
+      required: true,
+      placeholder: "请填写真实姓名",
+      options: [],
+    },
+    {
+      id: "phone",
+      label: "手机号",
+      type: "text",
+      required: true,
+      placeholder: "用于接收活动通知",
+      options: [],
+    },
+    {
+      id: "track",
+      label: "关注赛道",
+      type: "select",
+      required: true,
+      placeholder: "请选择赛道",
+      options: ["Agent 工具", "教育实训", "内容生产", "商业应用"],
+    },
+    {
+      id: "problem",
+      label: "你想解决什么问题？",
+      type: "textarea",
+      required: true,
+      placeholder: "简单描述你在意的问题和想做的方向",
+      options: [],
+    },
   ],
   registrations: [
     {
@@ -66,6 +94,34 @@ const state = {
       answers: ["随便", "不知道", "111"],
       email: "unknown@example.com",
     },
+    {
+      id: 5,
+      name: "苏叶",
+      team: "Voice Zine Lab",
+      type: "团队报名",
+      track: "内容生产",
+      status: "pending",
+      risk: "low",
+      tags: ["播客", "Newsletter", "AI 写作"],
+      aiDone: false,
+      summary: "团队想做一个把现场录音转成长文和播客脚本的 Agent，已有早期 Demo。",
+      answers: ["已有 5 期播客素材", "希望现场补一名前端"],
+      email: "suye@example.com",
+    },
+    {
+      id: 6,
+      name: "高远",
+      team: "Topic Radar",
+      type: "个人报名",
+      track: "Agent 工具",
+      status: "waitlist",
+      risk: "medium",
+      tags: ["RSS", "选题", "Agent"],
+      aiDone: true,
+      summary: "报名者希望做内容创作者的话题雷达，技术基础扎实但赛道匹配度需现场确认。",
+      answers: ["熟悉 RSS / 社媒 API", "想用 Agent 整理每周选题"],
+      email: "gaoyuan@example.com",
+    },
   ],
   projects: [
     {
@@ -101,6 +157,28 @@ const state = {
       files: ["MP3", "文档", "图片"],
       description: "把现场复盘自动整理成邮件和公众号草稿。",
     },
+    {
+      id: 4,
+      title: "Voice Zine Agent",
+      track: "内容生产",
+      status: "published",
+      votes: 156,
+      score: 4.8,
+      featured: true,
+      files: ["MP3", "文档", "图片"],
+      description: "现场录音和复盘音频自动转成可发布的长文和播客脚本。",
+    },
+    {
+      id: 5,
+      title: "Topic Radar",
+      track: "Agent 工具",
+      status: "published",
+      votes: 102,
+      score: 4.5,
+      featured: false,
+      files: ["HTML", "图片"],
+      description: "聚合多个社媒和 RSS 信号，给内容创作者生成每周选题。",
+    },
   ],
 };
 
@@ -120,12 +198,33 @@ const riskText = {
   high: "高",
 };
 
+const fieldTypes = [
+  ["text", "短文本"],
+  ["textarea", "长文本"],
+  ["select", "下拉选择"],
+  ["radio", "单选"],
+  ["checkbox", "多选"],
+  ["url", "链接"],
+  ["file", "附件"],
+];
+
+const optionFieldTypes = new Set(["select", "radio", "checkbox"]);
+
 function $(selector) {
   return document.querySelector(selector);
 }
 
 function $all(selector) {
   return [...document.querySelectorAll(selector)];
+}
+
+function escapeHtml(value) {
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
 }
 
 function showToast(message) {
@@ -179,34 +278,114 @@ function renderMetrics() {
     .join("");
 }
 
+function fieldCardHtml(field, index) {
+  const optionsValue = (field.options || []).join("\n");
+  const hasOptions = optionFieldTypes.has(field.type);
+  return `
+    <div class="field-item field-editor" data-field-index="${index}">
+      <span class="field-index">${String(index + 1).padStart(2, "0")}</span>
+      <div class="field-editor-main">
+        <div class="field-row field-row-head">
+          <label class="field-title">
+            <span>问题标题</span>
+            <input data-field-prop="label" type="text" value="${escapeHtml(field.label)}" aria-label="问题标题" placeholder="例如：你想解决什么问题？" />
+          </label>
+          <label class="field-required">
+            <input data-field-prop="required" type="checkbox" ${field.required ? "checked" : ""} aria-label="必填" />
+            <span>必填</span>
+          </label>
+          <button class="field-delete" data-field-delete type="button" aria-label="删除问题">删除</button>
+        </div>
+        <div class="field-row field-row-config">
+          <label class="field-type">
+            <span>题型</span>
+            <select data-field-prop="type" aria-label="问题类型">
+              ${fieldTypes
+                .map(
+                  ([value, label]) =>
+                    `<option value="${value}" ${field.type === value ? "selected" : ""}>${label}</option>`,
+                )
+                .join("")}
+            </select>
+          </label>
+          <label class="field-placeholder">
+            <span>占位提示</span>
+            <input data-field-prop="placeholder" type="text" value="${escapeHtml(field.placeholder || "")}" aria-label="占位提示" placeholder="参赛者填写时看到的灰字" />
+          </label>
+        </div>
+        <div class="field-options-wrap" data-field-options-wrap>
+          ${
+            hasOptions
+              ? `<label class="option-editor">
+                  <span>选项（每行一个）</span>
+                  <textarea data-field-prop="options" rows="3" aria-label="问题选项">${escapeHtml(optionsValue)}</textarea>
+                  <small>会同步到右侧预览，参赛者将看到这些选项。</small>
+                </label>`
+              : ""
+          }
+        </div>
+      </div>
+    </div>
+  `;
+}
+
 function renderFields() {
   $("#field-list").innerHTML = state.fields
-    .map(
-      (field, index) => `
-        <div class="field-item">
-          <span class="field-index">${String(index + 1).padStart(2, "0")}</span>
-          <div>
-            <strong>${field.label}</strong>
-            <div class="field-meta">${field.type} · ${field.required ? "必填" : "选填"}</div>
-          </div>
-          <span class="pill">${field.required ? "required" : "optional"}</span>
-        </div>
-      `,
-    )
+    .map((field, index) => fieldCardHtml(field, index))
     .join("");
 
+  renderFormPreview();
+}
+
+function previewInput(field) {
+  const label = escapeHtml(field.label);
+  const placeholder = escapeHtml(field.placeholder || "参赛者填写内容");
+
+  if (field.type === "textarea") {
+    return `<textarea rows="3" placeholder="${placeholder}"></textarea>`;
+  }
+
+  if (field.type === "select") {
+    const options = field.options?.length ? field.options : ["选项 A", "选项 B"];
+    return `
+      <select>
+        ${options.map((option) => `<option>${escapeHtml(option)}</option>`).join("")}
+      </select>
+    `;
+  }
+
+  if (field.type === "radio" || field.type === "checkbox") {
+    const options = field.options?.length ? field.options : ["选项 A", "选项 B"];
+    return `
+      <div class="choice-preview" aria-label="${label}">
+        ${options
+          .map(
+            (option) => `
+              <label>
+                <input type="${field.type}" name="preview-${escapeHtml(field.id || field.label)}" />
+                <span>${escapeHtml(option)}</span>
+              </label>
+            `,
+          )
+          .join("")}
+      </div>
+    `;
+  }
+
+  if (field.type === "file") {
+    return `<input type="file" accept=".ppt,.pptx,.pdf,.html,.zip,.mp3,.png,.jpg,.jpeg,.webp,.doc,.docx" />`;
+  }
+
+  return `<input type="${field.type === "url" ? "url" : "text"}" placeholder="${placeholder}" />`;
+}
+
+function renderFormPreview() {
   $("#form-preview").innerHTML = state.fields
     .map((field) => {
-      const input =
-        field.type === "textarea"
-          ? "<textarea rows=\"3\" placeholder=\"参赛者填写内容\"></textarea>"
-          : field.type === "select"
-            ? "<select><option>Agent 工具</option><option>教育实训</option><option>内容生产</option></select>"
-            : "<input type=\"text\" placeholder=\"参赛者填写内容\" />";
       return `
         <label class="demo-question">
-          <strong>${field.label}${field.required ? " *" : ""}</strong>
-          ${input}
+          <strong>${escapeHtml(field.label)}${field.required ? " *" : ""}</strong>
+          ${previewInput(field)}
         </label>
       `;
     })
@@ -414,6 +593,68 @@ function renderEventPreview() {
   `;
 }
 
+function updateFieldFromInput(input) {
+  const item = input.closest("[data-field-index]");
+  if (!item) return;
+  const index = Number(item.dataset.fieldIndex);
+  const field = state.fields[index];
+  const prop = input.dataset.fieldProp;
+  if (!field || !prop) return;
+
+  if (prop === "required") {
+    field.required = input.checked;
+    renderFormPreview();
+    return;
+  }
+
+  if (prop === "options") {
+    field.options = input.value
+      .split(/\n|,/)
+      .map((option) => option.trim())
+      .filter(Boolean);
+    renderFormPreview();
+    return;
+  }
+
+  field[prop] = input.value;
+
+  if (prop === "type") {
+    if (optionFieldTypes.has(field.type) && (!field.options || field.options.length === 0)) {
+      field.options = ["选项 A", "选项 B"];
+    }
+    if (!optionFieldTypes.has(field.type)) {
+      field.options = [];
+    }
+    const wrap = item.querySelector("[data-field-options-wrap]");
+    if (wrap) {
+      wrap.innerHTML = optionFieldTypes.has(field.type)
+        ? `<label class="option-editor">
+            <span>选项（每行一个）</span>
+            <textarea data-field-prop="options" rows="3" aria-label="问题选项">${escapeHtml((field.options || []).join("\n"))}</textarea>
+            <small>会同步到右侧预览，参赛者将看到这些选项。</small>
+          </label>`
+        : "";
+    }
+    renderFormPreview();
+    return;
+  }
+
+  renderFormPreview();
+}
+
+function deleteField(button) {
+  const item = button.closest("[data-field-index]");
+  if (!item) return;
+  if (state.fields.length <= 1) {
+    showToast("至少保留一个报名问题");
+    return;
+  }
+  const index = Number(item.dataset.fieldIndex);
+  const [removed] = state.fields.splice(index, 1);
+  renderFields();
+  showToast(`已删除问题：${removed.label}`);
+}
+
 function bindEvents() {
   $all("[data-admin-view]").forEach((button) => {
     button.addEventListener("click", () => setView(button.dataset.adminView));
@@ -436,9 +677,35 @@ function bindEvents() {
   });
 
   $("#add-field-button").addEventListener("click", () => {
-    state.fields.push({ label: `新增问题 ${state.fields.length + 1}`, type: "textarea", required: false });
+    const next = state.fields.length + 1;
+    state.fields.push({
+      id: `custom_${Date.now()}`,
+      label: `新增问题 ${next}`,
+      type: "text",
+      required: false,
+      placeholder: "参赛者在这里填写",
+      options: [],
+    });
     renderFields();
-    showToast("已新增一个报名问题");
+    showToast("已新增一个报名问题，可编辑标题、题型和必填");
+    setTimeout(() => {
+      const items = $all("[data-field-index]");
+      const last = items[items.length - 1];
+      const titleInput = last?.querySelector('[data-field-prop="label"]');
+      titleInput?.focus();
+      titleInput?.select();
+    }, 0);
+  });
+
+  $("#field-list").addEventListener("input", (event) => {
+    if (event.target.matches("[data-field-prop]")) updateFieldFromInput(event.target);
+  });
+  $("#field-list").addEventListener("change", (event) => {
+    if (event.target.matches("[data-field-prop]")) updateFieldFromInput(event.target);
+  });
+  $("#field-list").addEventListener("click", (event) => {
+    const deleteButton = event.target.closest("[data-field-delete]");
+    if (deleteButton) deleteField(deleteButton);
   });
 
   ["registration-status-filter", "registration-track-filter", "registration-search"].forEach((id) => {
