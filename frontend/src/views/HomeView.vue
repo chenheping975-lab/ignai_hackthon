@@ -47,7 +47,7 @@ const personas = [
 ]
 
 const stats = [
-  { value: '200+', label: '社区成员', sub: '持续增长中' },
+  { value: '300+', label: '社区成员', sub: '持续增长中' },
   { value: '20+', label: '线下活动', sub: '分享会 × 黑客松' },
   { value: '长沙', label: '城市', sub: 'Local roots' },
   { value: '2025', label: '成立', sub: 'Ignite before AGI' },
@@ -66,7 +66,6 @@ const stats = [
       </h1>
 
       <p class="hero-sub">
-        洋 = 跨文化、全球信号。客 = 创客、极客、黑客。松 = 黑客松。<br />
         一场面向高校、开发者和 AI 行动者的两天一夜线下黑客松。
       </p>
 
