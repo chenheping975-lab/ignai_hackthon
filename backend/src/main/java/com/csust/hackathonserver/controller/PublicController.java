@@ -1,9 +1,9 @@
 package com.csust.hackathonserver.controller;
 
+import com.csust.hackathonserver.Response.EventDetailVO;
 import com.csust.hackathonserver.Response.EventVO;
 import com.csust.hackathonserver.Response.ProjectVO;
 import com.csust.hackathonserver.Response.Result;
-import com.csust.hackathonserver.mapper.EventsMapper;
 import com.csust.hackathonserver.pojo.Events;
 import com.csust.hackathonserver.pojo.Projects;
 import com.csust.hackathonserver.service.EventsService;
@@ -12,6 +12,7 @@ import com.github.pagehelper.PageInfo;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -31,23 +32,42 @@ public class PublicController {
     private ProjectsService projectsService;
     @GetMapping("/events/current")
     public Result getCurrentEvent(){
-        Events currentEvent = eventsService.getCurrentEvent();
+        EventDetailVO currentEvent = eventsService.getCurrentEventDetail();
         if(currentEvent == null){
             return Result.fail("暂时还没有符合条件的活动，敬请期待");
         }
-        EventVO eventVO = new EventVO();
-        eventVO.setId(currentEvent.getId());
-        eventVO.setTitle(currentEvent.getTitle());
-        eventVO.setSubtitle(currentEvent.getSubtitle());
-        eventVO.setLocation(currentEvent.getLocation());
-        eventVO.setDescription(currentEvent.getDescription());
-        if(Integer.valueOf(1).equals(currentEvent.getRegistrationOpen())) {
-            eventVO.setRegistrationOpen(true);
-        }else{
-            eventVO.setRegistrationOpen(false);
+        return Result.ok(currentEvent);
+    }
+
+    @GetMapping("/events/{eventId}")
+    public Result getEventDetail(@PathVariable Long eventId) {
+        EventDetailVO event = eventsService.getEventDetail(eventId);
+        if (event == null) {
+            return Result.fail("活动不存在");
         }
-        eventVO.setRegistrationDeadline(currentEvent.getRegistrationDeadline());
-        return Result.ok(eventVO);
+        return Result.ok(event);
+    }
+
+    @GetMapping("/events/{eventId}/tracks")
+    public Result getEventTracks(@PathVariable Long eventId) {
+        EventDetailVO event = eventsService.getEventDetail(eventId);
+        if (event == null) {
+            return Result.fail("活动不存在");
+        }
+        return Result.ok(event.getTracks());
+    }
+
+    @GetMapping("/events/{eventId}/form-fields")
+    public Result getEventFormFields(@PathVariable Long eventId,
+                                     @RequestParam(value = "targetType", defaultValue = "registration") String targetType) {
+        EventDetailVO event = eventsService.getEventDetail(eventId);
+        if (event == null) {
+            return Result.fail("活动不存在");
+        }
+        if (!"registration".equals(targetType)) {
+            return Result.ok(new ArrayList<>());
+        }
+        return Result.ok(event.getRegistrationFields());
     }
 
     /**

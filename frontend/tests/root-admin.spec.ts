@@ -40,7 +40,16 @@ test.describe("Root 后台 MVP 原型", () => {
 
     await page.locator("#add-field-button").click();
     await expect(page.locator(".field-item")).toHaveCount(initial + 1);
-    await expect(page.locator("#form-preview")).toContainText(`新增问题 ${initial + 1}`);
+
+    const editor = page.locator(`[data-field-index="${initial}"]`);
+    await editor.locator('[data-field-prop="label"]').fill("是否需要现场组队？");
+    await editor.locator('[data-field-prop="type"]').selectOption("radio");
+    await editor.locator('[data-field-prop="required"]').check();
+    await editor.locator('[data-field-prop="options"]').fill("需要\n不需要\n现场再看");
+
+    await expect(page.locator("#form-preview")).toContainText("是否需要现场组队？ *");
+    await expect(page.locator("#form-preview")).toContainText("需要");
+    await expect(page.locator("#form-preview")).toContainText("不需要");
   });
 
   test("项目看板：公开项目后赛事预览展示同步变化", async ({ page }) => {
