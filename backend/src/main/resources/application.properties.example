@@ -4,3 +4,6 @@ spring.datasource.password=你的数据库密码
 spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
 spring.application.name=hackathon-server
 mybatis.configuration.map-underscore-to-camel-case=true
+ignai.upload-dir=attachments
+spring.servlet.multipart.max-file-size=20MB
+spring.servlet.multipart.max-request-size=50MB

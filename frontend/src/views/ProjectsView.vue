@@ -52,7 +52,7 @@ function normalizeProject(project, currentEvent) {
     id: String(project.id),
     track: track?.name || project.trackName || '未分赛道',
     image: project.coverUrl || '/img/ignai-business-card-mockup.webp',
-    files: project.files || [],
+    files: (project.files || []).map(file => typeof file === 'string' ? file : (file.name || file.originalName || '附件')),
     votes: project.votes || 0,
     featured: project.featured || false,
     submittedAt: project.submittedAt || project.createdAt || '',

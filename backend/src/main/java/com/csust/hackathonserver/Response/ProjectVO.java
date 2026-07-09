@@ -2,8 +2,9 @@ package com.csust.hackathonserver.Response;
 
 import lombok.Data;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Map;
 
 @Data
 public class ProjectVO {
@@ -18,4 +19,5 @@ public class ProjectVO {
     private String status;
     private LocalDateTime submittedAt;
     private Integer votes;
+    private List<Map<String, Object>> files;
 }

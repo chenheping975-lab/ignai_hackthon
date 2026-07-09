@@ -18,4 +18,20 @@ public class FormFiledsImpl implements FormFieldsService {
     public List<FormFields> getFormFields(Long eventId, String target) {
         return formFieldsMapper.findByEventIdAndTarget(eventId, target);
     }
+
+    @Override
+    public List<FormFields> getAllFormFields(Long eventId, String target) {
+        return formFieldsMapper.findAllByEventIdAndTarget(eventId, target);
+    }
+
+    @Override
+    public FormFields insert(FormFields field) {
+        formFieldsMapper.insert(field);
+        return field;
+    }
+
+    @Override
+    public int update(FormFields field) {
+        return formFieldsMapper.update(field);
+    }
 }

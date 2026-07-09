@@ -77,8 +77,8 @@ public class RegistrationController {
         if (request.getEventId() == null) {
             return Result.fail("PARAM_INVALID", "活动ID不能为空");
         }
-        Events event = eventsService.getCurrentEvent();
-        if (event == null || !event.getId().equals(request.getEventId())) {
+        Events event = eventsService.findById(request.getEventId());
+        if (event == null) {
             return Result.fail("EVENT_NOT_FOUND", "活动不存在或已结束");
         }
         // 检查报名是否开放：registrationOpen = 1 表示开放，0 表示关闭

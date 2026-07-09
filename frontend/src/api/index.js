@@ -88,6 +88,12 @@ export const ProjectApi = {
   create: (data) => request('/projects', { method: 'POST', body: data }),
   update: (id, data) => request(`/projects/${id}`, { method: 'PUT', body: data }),
   submit: (id) => request(`/projects/${id}/submit`, { method: 'POST' }),
+  files: (id) => request(`/projects/${id}/files`),
+  uploadFile: (id, file) => {
+    const formData = new FormData()
+    formData.append('file', file)
+    return request(`/projects/${id}/files`, { method: 'POST', body: formData })
+  },
 }
 
 export const AdminApi = {
@@ -98,6 +104,9 @@ export const AdminApi = {
   events: () => request('/admin/events'),
   createEvent: (data) => request('/admin/events', { method: 'POST', body: data }),
   updateEvent: (id, data) => request(`/admin/events/${id}`, { method: 'PUT', body: data }),
+  formFields: (eventId, target = 'registration') => request(`/admin/events/${eventId}/form-fields?target=${target}`),
+  createFormField: (eventId, data) => request(`/admin/events/${eventId}/form-fields`, { method: 'POST', body: data }),
+  updateFormField: (eventId, fieldId, data) => request(`/admin/events/${eventId}/form-fields/${fieldId}`, { method: 'PUT', body: data }),
   registrations: (params) => request(`/admin/registrations?${new URLSearchParams(params)}`),
   registrationDetail: (id) => request(`/admin/registrations/${id}`),
   reviewRegistration: (id, data) => request(`/admin/registrations/${id}/review`, { method: 'PATCH', body: data }),

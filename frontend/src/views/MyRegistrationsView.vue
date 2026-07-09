@@ -9,13 +9,17 @@ const auth = useAuthStore()
 
 const registrations = ref([])
 const project = ref(null)
+const projectFiles = ref([])
+const selectedFiles = ref([])
 const loading = ref(false)
 const savingProject = ref(false)
 const submittingProject = ref(false)
+const uploadingFiles = ref(false)
 const errorMessage = ref('')
 const projectMessage = ref('')
 const projectMessageType = ref('muted')
 const projectForm = ref({
+  eventId: '',
   title: '',
   tagline: '',
   description: '',
@@ -55,14 +59,25 @@ function fillProjectForm(data) {
     demoUrl: data?.demoUrl || '',
     codeUrl: data?.codeUrl || '',
     trackId: data?.trackId ? String(data.trackId) : '',
+    eventId: data?.eventId ? String(data.eventId) : projectForm.value.eventId,
   }
 }
 
+function formatFileSize(size) {
+  if (!size) return '0 KB'
+  if (size < 1024 * 1024) return `${Math.ceil(size / 1024)} KB`
+  return `${(size / 1024 / 1024).toFixed(1)} MB`
+}
+
 function applyRegistrationDefaults() {
+  if (!projectForm.value.eventId && registrations.value.length) {
+    projectForm.value.eventId = String(registrations.value[0].eventId)
+  }
   if (projectForm.value.trackId) return
   const firstWithTrack = registrations.value.find(item => item.trackId)
   if (firstWithTrack?.trackId) {
     projectForm.value.trackId = String(firstWithTrack.trackId)
+    projectForm.value.eventId = String(firstWithTrack.eventId)
   }
 }
 
@@ -76,6 +91,11 @@ async function loadMyData() {
     const projectData = await ProjectApi.mine()
     project.value = projectData || null
     fillProjectForm(project.value)
+    if (project.value?.id) {
+      projectFiles.value = await ProjectApi.files(project.value.id)
+    } else {
+      projectFiles.value = []
+    }
     applyRegistrationDefaults()
   } catch (e) {
     errorMessage.value = e.message
@@ -84,9 +104,15 @@ async function loadMyData() {
   }
 }
 
+function handleFilesChange(event) {
+  selectedFiles.value = Array.from(event.target.files || [])
+}
+
 function buildProjectPayload() {
   const trackId = projectForm.value.trackId ? Number(projectForm.value.trackId) : null
+  const eventId = projectForm.value.eventId ? Number(projectForm.value.eventId) : null
   return {
+    eventId,
     title: projectForm.value.title.trim(),
     tagline: projectForm.value.tagline.trim(),
     description: projectForm.value.description.trim(),
@@ -116,11 +142,44 @@ async function saveProject() {
     }
     projectMessage.value = '作品信息已保存'
     projectMessageType.value = 'success'
+    if (project.value?.id && selectedFiles.value.length) {
+      await uploadProjectFiles()
+    }
   } catch (e) {
     projectMessage.value = e.message
     projectMessageType.value = 'error'
   } finally {
     savingProject.value = false
+  }
+}
+
+async function uploadProjectFiles() {
+  projectMessage.value = ''
+  if (!project.value?.id) {
+    projectMessage.value = '请先创建作品，再上传附件'
+    projectMessageType.value = 'error'
+    return
+  }
+  if (!selectedFiles.value.length) {
+    projectMessage.value = '请选择要上传的附件'
+    projectMessageType.value = 'error'
+    return
+  }
+
+  uploadingFiles.value = true
+  try {
+    for (const file of selectedFiles.value) {
+      await ProjectApi.uploadFile(project.value.id, file)
+    }
+    projectFiles.value = await ProjectApi.files(project.value.id)
+    selectedFiles.value = []
+    projectMessage.value = '附件已上传'
+    projectMessageType.value = 'success'
+  } catch (e) {
+    projectMessage.value = e.message
+    projectMessageType.value = 'error'
+  } finally {
+    uploadingFiles.value = false
   }
 }
 
@@ -215,6 +274,13 @@ onMounted(async () => {
           <label>赛道 ID
             <input v-model="projectForm.trackId" type="number" min="1" placeholder="可从报名记录里查看" />
           </label>
+          <label>关联活动
+            <select v-model="projectForm.eventId">
+              <option v-for="item in registrations" :key="item.id" :value="String(item.eventId)">
+                {{ item.eventTitle || `活动 #${item.eventId}` }}
+              </option>
+            </select>
+          </label>
           <label>Demo 链接
             <input v-model="projectForm.demoUrl" type="url" placeholder="https://..." />
           </label>
@@ -224,6 +290,30 @@ onMounted(async () => {
           <label class="wide">作品描述
             <textarea v-model="projectForm.description" rows="5" placeholder="说明你解决的问题、核心功能和当前完成度"></textarea>
           </label>
+          <label class="wide">作品附件
+            <input type="file" multiple @change="handleFilesChange" />
+            <span class="field-hint">支持 PPT、PDF、HTML、ZIP、图片、音频、文档等轻量附件，单个文件不超过 20MB。</span>
+          </label>
+
+          <div class="wide upload-panel">
+            <div class="upload-actions">
+              <span>{{ selectedFiles.length ? `已选择 ${selectedFiles.length} 个文件` : '还没有选择文件' }}</span>
+              <button
+                class="outline-button"
+                type="button"
+                :disabled="!project?.id || !selectedFiles.length || uploadingFiles"
+                @click="uploadProjectFiles"
+              >
+                {{ uploadingFiles ? '上传中...' : '上传附件' }}
+              </button>
+            </div>
+            <ul v-if="projectFiles.length" class="file-list">
+              <li v-for="file in projectFiles" :key="file.id">
+                <span>{{ file.originalName || file.name }}</span>
+                <small>{{ file.fileType || file.type }} · {{ formatFileSize(file.sizeBytes) }}</small>
+              </li>
+            </ul>
+          </div>
 
           <div class="project-actions">
             <button class="primary-button" type="submit" :disabled="savingProject">
@@ -354,6 +444,44 @@ onMounted(async () => {
   font: inherit;
 }
 .project-form textarea { padding: 11px 12px; resize: vertical; }
+.field-hint {
+  color: var(--muted);
+  font-size: .82rem;
+  font-weight: 500;
+  letter-spacing: 0;
+  text-transform: none;
+}
+.upload-panel {
+  border: 1px dashed var(--line);
+  border-radius: var(--radius);
+  padding: 14px;
+  display: grid;
+  gap: 12px;
+}
+.upload-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  color: var(--muted);
+}
+.file-list {
+  list-style: none;
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+}
+.file-list li {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: rgba(255,255,255,.5);
+}
+.file-list small { color: var(--muted); }
 .project-actions {
   grid-column: 1 / -1;
   display: flex;

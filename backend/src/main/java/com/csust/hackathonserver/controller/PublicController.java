@@ -6,11 +6,13 @@ import com.csust.hackathonserver.Response.Result;
 import com.csust.hackathonserver.Utils.JwtUtil;
 import com.csust.hackathonserver.pojo.Events;
 import com.csust.hackathonserver.pojo.FormFields;
+import com.csust.hackathonserver.pojo.ProjectFiles;
 import com.csust.hackathonserver.pojo.Projects;
 import com.csust.hackathonserver.pojo.Ratings;
 import com.csust.hackathonserver.pojo.Votes;
 import com.csust.hackathonserver.service.EventsService;
 import com.csust.hackathonserver.service.FormFieldsService;
+import com.csust.hackathonserver.service.ProjectFilesService;
 import com.csust.hackathonserver.service.ProjectsService;
 import com.csust.hackathonserver.service.RatingsServices;
 import com.csust.hackathonserver.service.TracksService;
@@ -38,6 +40,8 @@ public class PublicController {
     private EventsService eventsService;
     @Autowired
     private ProjectsService projectsService;
+    @Autowired
+    private ProjectFilesService projectFilesService;
     @Autowired
     private FormFieldsService formFieldsService;
     @Autowired
@@ -106,18 +110,7 @@ public class PublicController {
         List<Projects> projects = projectsService.getPublicProjects(status);
         List<ProjectVO> projectVOS = new ArrayList<ProjectVO>();
         projects.forEach(project -> {
-            ProjectVO projectVO = new ProjectVO();
-            projectVO.setId(project.getId());
-            projectVO.setEventId(project.getEventId());
-            projectVO.setTitle(project.getTitle());
-            projectVO.setTrackId(project.getTrackId());
-            projectVO.setTagline(project.getTagline());
-            projectVO.setDescription(project.getDescription());
-            projectVO.setCoverUrl(project.getDemoUrl());
-            projectVO.setStatus((String) project.getStatus());
-            projectVO.setSubmittedAt(project.getSubmittedAt());
-            projectVO.setVotes(votesMapper.countByProjectId(project.getId()));
-            projectVOS.add(projectVO);
+            projectVOS.add(buildProjectVO(project));
         });
         return Result.ok(projectVOS);
     }
@@ -128,18 +121,7 @@ public class PublicController {
         if (project == null) {
             return Result.fail("作品不存在");
         }
-        ProjectVO projectVO = new ProjectVO();
-        projectVO.setId(project.getId());
-        projectVO.setEventId(project.getEventId());
-        projectVO.setTitle(project.getTitle());
-        projectVO.setTrackId(project.getTrackId());
-        projectVO.setTagline(project.getTagline());
-        projectVO.setDescription(project.getDescription());
-        projectVO.setCoverUrl(project.getDemoUrl());
-        projectVO.setStatus((String) project.getStatus());
-        projectVO.setSubmittedAt(project.getSubmittedAt());
-        projectVO.setVotes(votesMapper.countByProjectId(project.getId()));
-        return Result.ok(projectVO);
+        return Result.ok(buildProjectVO(project));
     }
 
     @GetMapping("/events/{eventId}/tracks")
@@ -249,6 +231,37 @@ public class PublicController {
             fieldList.add(fieldMap);
         }
         return fieldList;
+    }
+
+    private ProjectVO buildProjectVO(Projects project) {
+        ProjectVO projectVO = new ProjectVO();
+        projectVO.setId(project.getId());
+        projectVO.setEventId(project.getEventId());
+        projectVO.setTitle(project.getTitle());
+        projectVO.setTrackId(project.getTrackId());
+        projectVO.setTagline(project.getTagline());
+        projectVO.setDescription(project.getDescription());
+        projectVO.setCoverUrl(project.getDemoUrl());
+        projectVO.setStatus((String) project.getStatus());
+        projectVO.setSubmittedAt(project.getSubmittedAt());
+        projectVO.setVotes(votesMapper.countByProjectId(project.getId()));
+        projectVO.setFiles(buildProjectFiles(project.getId()));
+        return projectVO;
+    }
+
+    private List<Map<String, Object>> buildProjectFiles(Long projectId) {
+        List<ProjectFiles> files = projectFilesService.findByProjectId(projectId);
+        List<Map<String, Object>> result = new ArrayList<>();
+        for (ProjectFiles file : files) {
+            Map<String, Object> item = new HashMap<>();
+            item.put("id", file.getId());
+            item.put("name", file.getOriginalName());
+            item.put("type", file.getFileType());
+            item.put("sizeBytes", file.getSizeBytes());
+            item.put("path", file.getFilePath());
+            result.add(item);
+        }
+        return result;
     }
 
     @PostMapping("/projects/{projectId}/votes")

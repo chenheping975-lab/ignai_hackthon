@@ -76,10 +76,28 @@ async function loadDashboard() {
 
 // ========== Events ==========
 const events = ref([])
-const eventForm = reactive({ title: '', subtitle: '', location: '', description: '', status: 'draft' })
+const eventForm = reactive({
+  title: '',
+  subtitle: '',
+  location: '',
+  description: '',
+  status: 'published',
+  registrationOpen: true,
+  registrationDeadline: '',
+  submissionDeadline: '',
+})
 const editingEventId = ref(null)
 const tracks = ref([])
 const newTrackName = ref('')
+const formFields = ref([])
+const newField = reactive({
+  fieldKey: '',
+  label: '',
+  fieldType: 'text',
+  required: false,
+  placeholder: '',
+  optionsText: '',
+})
 
 async function loadEvents() {
   try { events.value = await AdminApi.events() } catch (e) { message.value = e.message }
@@ -87,31 +105,73 @@ async function loadEvents() {
 
 function openCreateEvent() {
   editingEventId.value = 0
-  eventForm.title = ''; eventForm.subtitle = ''; eventForm.location = ''; eventForm.description = ''; eventForm.status = 'draft'
+  eventForm.title = ''
+  eventForm.subtitle = ''
+  eventForm.location = ''
+  eventForm.description = ''
+  eventForm.status = 'published'
+  eventForm.registrationOpen = true
+  eventForm.registrationDeadline = ''
+  eventForm.submissionDeadline = ''
   tracks.value = []
+  formFields.value = []
   message.value = ''
 }
 
 function openEditEvent(evt) {
   editingEventId.value = evt.id
-  Object.assign(eventForm, { title: evt.title || '', subtitle: evt.subtitle || '', location: evt.location || '', description: evt.description || '', status: evt.status || 'draft' })
+  Object.assign(eventForm, {
+    title: evt.title || '',
+    subtitle: evt.subtitle || '',
+    location: evt.location || '',
+    description: evt.description || '',
+    status: evt.status || 'published',
+    registrationOpen: evt.registrationOpen === true || evt.registrationOpen === 1,
+    registrationDeadline: toDateTimeInput(evt.registrationDeadline),
+    submissionDeadline: toDateTimeInput(evt.submissionDeadline),
+  })
   tracks.value = []
+  formFields.value = []
   loadTracks(evt.id)
+  loadFormFields(evt.id)
   message.value = ''
+}
+
+function toDateTimeInput(value) {
+  if (!value) return ''
+  return String(value).slice(0, 16)
+}
+
+function toApiDateTime(value) {
+  if (!value) return null
+  return value.length === 10 ? `${value}T23:59:00` : value
 }
 
 async function loadTracks(eventId) {
   try { tracks.value = await AdminApi.tracks(eventId) } catch (e) { tracks.value = [] }
 }
 
+async function loadFormFields(eventId) {
+  try { formFields.value = await AdminApi.formFields(eventId, 'registration') } catch (e) { formFields.value = [] }
+}
+
 async function saveEvent() {
   if (!eventForm.title.trim()) { message.value = '请输入活动标题'; return }
   loading.value = true
   try {
+    const payload = {
+      ...eventForm,
+      registrationOpen: eventForm.registrationOpen ? 1 : 0,
+      registrationDeadline: toApiDateTime(eventForm.registrationDeadline),
+      submissionDeadline: toApiDateTime(eventForm.submissionDeadline),
+    }
     if (editingEventId.value) {
-      await AdminApi.updateEvent(editingEventId.value, eventForm)
+      await AdminApi.updateEvent(editingEventId.value, payload)
     } else {
-      await AdminApi.createEvent(eventForm)
+      const created = await AdminApi.createEvent(payload)
+      editingEventId.value = created.id
+      await loadTracks(created.id)
+      await loadFormFields(created.id)
     }
     message.value = '保存成功'
     await loadEvents()
@@ -125,6 +185,48 @@ async function addTrack() {
     await AdminApi.createTrack(editingEventId.value, { name: newTrackName.value.trim(), sortOrder: tracks.value.length + 1 })
     newTrackName.value = ''
     await loadTracks(editingEventId.value)
+  } catch (e) { message.value = e.message }
+}
+
+function resetNewField() {
+  Object.assign(newField, {
+    fieldKey: '',
+    label: '',
+    fieldType: 'text',
+    required: false,
+    placeholder: '',
+    optionsText: '',
+  })
+}
+
+function fieldPayload(field, index = 0) {
+  return {
+    targetType: 'registration',
+    fieldKey: field.fieldKey.trim(),
+    label: field.label.trim(),
+    fieldType: field.fieldType,
+    required: field.required,
+    placeholder: field.placeholder,
+    options: (field.optionsText || '').split('\n').map(item => item.trim()).filter(Boolean),
+    sortOrder: index + 1,
+    enabled: true,
+  }
+}
+
+async function addFormField() {
+  if (!editingEventId.value) {
+    message.value = '请先保存活动，再添加报名字段'
+    return
+  }
+  if (!newField.fieldKey.trim() || !newField.label.trim()) {
+    message.value = '字段标识和字段标题不能为空'
+    return
+  }
+  try {
+    await AdminApi.createFormField(editingEventId.value, fieldPayload(newField, formFields.value.length))
+    resetNewField()
+    await loadFormFields(editingEventId.value)
+    message.value = '报名字段已添加'
   } catch (e) { message.value = e.message }
 }
 
@@ -248,12 +350,13 @@ onMounted(checkRootStatus)
 
         <!-- Event List -->
         <table v-if="events.length" class="data-table">
-          <thead><tr><th>ID</th><th>标题</th><th>状态</th><th>操作</th></tr></thead>
+          <thead><tr><th>ID</th><th>标题</th><th>状态</th><th>报名</th><th>操作</th></tr></thead>
           <tbody>
             <tr v-for="evt in events" :key="evt.id">
               <td>{{ evt.id }}</td>
               <td>{{ evt.title }}</td>
               <td>{{ evt.status }}</td>
+              <td>{{ evt.registrationOpen ? '开放' : '关闭' }}</td>
               <td><button class="outline-button" @click="openEditEvent(evt)">编辑</button></td>
             </tr>
           </tbody>
@@ -275,6 +378,18 @@ onMounted(checkRootStatus)
                 <option value="archived">已归档</option>
               </select>
             </label>
+            <label>报名状态
+              <select v-model="eventForm.registrationOpen">
+                <option :value="true">开放报名</option>
+                <option :value="false">关闭报名</option>
+              </select>
+            </label>
+            <label>报名截止
+              <input v-model="eventForm.registrationDeadline" type="datetime-local" />
+            </label>
+            <label>提交截止
+              <input v-model="eventForm.submissionDeadline" type="datetime-local" />
+            </label>
             <label class="wide">描述 <textarea v-model="eventForm.description" rows="3"></textarea></label>
           </div>
           <button class="primary-button" @click="saveEvent" :disabled="loading">保存活动</button>
@@ -288,6 +403,40 @@ onMounted(checkRootStatus)
             <div class="inline-form">
               <input v-model="newTrackName" placeholder="新赛道名称" @keyup.enter="addTrack" />
               <button class="outline-button" @click="addTrack">添加赛道</button>
+            </div>
+          </div>
+
+          <div v-if="editingEventId" class="field-editor-block">
+            <h3>报名字段</h3>
+            <ul v-if="formFields.length" class="field-list">
+              <li v-for="field in formFields" :key="field.id">
+                <strong>{{ field.label }}</strong>
+                <span>{{ field.fieldKey }} · {{ field.fieldType }} · {{ field.required ? '必填' : '选填' }}</span>
+              </li>
+            </ul>
+            <p v-else class="muted">还没有报名字段。至少添加姓名、手机号、赛道等字段，前台报名页才会出现表单。</p>
+
+            <div class="field-form">
+              <label>字段标识 <input v-model="newField.fieldKey" placeholder="name / phone / track" /></label>
+              <label>字段标题 <input v-model="newField.label" placeholder="姓名 / 手机号 / 选择赛道" /></label>
+              <label>字段类型
+                <select v-model="newField.fieldType">
+                  <option value="text">单行文本</option>
+                  <option value="textarea">多行文本</option>
+                  <option value="select">下拉选择</option>
+                  <option value="radio">单选</option>
+                  <option value="checkbox">多选</option>
+                  <option value="url">链接</option>
+                  <option value="date">日期</option>
+                  <option value="file">文件</option>
+                </select>
+              </label>
+              <label>占位提示 <input v-model="newField.placeholder" placeholder="请输入..." /></label>
+              <label class="check-label"><input v-model="newField.required" type="checkbox" /> 必填</label>
+              <label class="wide">选项
+                <textarea v-model="newField.optionsText" rows="3" placeholder="下拉/单选/多选时使用，每行一个选项"></textarea>
+              </label>
+              <button class="outline-button" @click="addFormField">添加报名字段</button>
             </div>
           </div>
         </div>
@@ -398,6 +547,38 @@ input, textarea, select { min-height: 42px; border: 1px solid var(--line); borde
 textarea { padding: 10px 12px; resize: vertical; }
 .inline-form { display: flex; gap: 10px; margin-top: 12px; }
 .inline-form input { flex: 1; }
+.field-editor-block { margin-top: 24px; }
+.field-list {
+  list-style: none;
+  display: grid;
+  gap: 8px;
+  padding: 0;
+  margin: 0 0 14px;
+}
+.field-list li {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+.field-list span { color: var(--muted); font-size: .82rem; }
+.field-form {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 12px;
+}
+.field-form .wide { grid-column: 1 / -1; }
+.check-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 42px;
+  margin-top: 18px;
+}
+.check-label input { width: auto; min-height: auto; }
 .reg-filters { display: flex; gap: 8px; margin-bottom: 16px; align-items: center; }
 .reg-filters button { padding: 6px 14px; border: 1px solid var(--line); border-radius: 20px; background: transparent; color: var(--muted); cursor: pointer; font: inherit; font-size: .82rem; }
 .reg-filters button.active { border-color: var(--heat); color: var(--heat); }

@@ -5,15 +5,18 @@ import com.csust.hackathonserver.Response.UserVO;
 import com.csust.hackathonserver.Utils.JwtUtil;
 import com.csust.hackathonserver.pojo.AdminCreateRequest;
 import com.csust.hackathonserver.pojo.Events;
+import com.csust.hackathonserver.pojo.FormFields;
 import com.csust.hackathonserver.pojo.Projects;
 import com.csust.hackathonserver.pojo.Registrations;
 import com.csust.hackathonserver.pojo.Tracks;
 import com.csust.hackathonserver.pojo.Users;
 import com.csust.hackathonserver.service.EventsService;
+import com.csust.hackathonserver.service.FormFieldsService;
 import com.csust.hackathonserver.service.ProjectsService;
 import com.csust.hackathonserver.service.RegistrationsService;
 import com.csust.hackathonserver.service.TracksService;
 import com.csust.hackathonserver.service.UsersService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,6 +55,9 @@ public class AdminController {
     private EventsService eventsService;
 
     @Autowired
+    private FormFieldsService formFieldsService;
+
+    @Autowired
     private TracksService tracksService;
 
     @Autowired
@@ -59,6 +65,8 @@ public class AdminController {
 
     @Autowired
     private JwtUtil jwtUtil;
+
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     // ==================== Dashboard ====================
 
@@ -195,16 +203,22 @@ public class AdminController {
         event.setCreatedAt(LocalDateTime.now());
         event.setUpdatedAt(LocalDateTime.now());
         if (event.getStatus() == null) {
-            event.setStatus("draft");
+            event.setStatus("published");
         }
         if (event.getRegistrationOpen() == null) {
-            event.setRegistrationOpen(0);
+            event.setRegistrationOpen(1);
         }
         if (event.getRatingEnabled() == null) {
             event.setRatingEnabled(0);
         }
         if (event.getVoteEnabled() == null) {
             event.setVoteEnabled(0);
+        }
+        if (event.getRegistrationDeadline() == null) {
+            event.setRegistrationDeadline(LocalDateTime.now().plusDays(14));
+        }
+        if (event.getSubmissionDeadline() == null) {
+            event.setSubmissionDeadline(LocalDateTime.now().plusDays(21));
         }
 
         eventsService.insert(event);
@@ -414,6 +428,57 @@ public class AdminController {
         return Result.ok(track);
     }
 
+    // ==================== 报名字段配置 ====================
+
+    @GetMapping("/events/{eventId}/form-fields")
+    public Result listFormFields(@PathVariable Long eventId,
+                                 @RequestParam(value = "target", defaultValue = "registration") String target,
+                                 HttpServletRequest request) {
+        if (!isAdmin(request)) {
+            return Result.fail("UNAUTHORIZED", "无权访问");
+        }
+        if (!isValidFormTarget(target)) {
+            return Result.fail("PARAM_INVALID", "target 必须为 registration 或 project");
+        }
+        return Result.ok(formFieldsService.getAllFormFields(eventId, target));
+    }
+
+    @PostMapping("/events/{eventId}/form-fields")
+    public Result createFormField(@PathVariable Long eventId,
+                                  @RequestBody Map<String, Object> body,
+                                  HttpServletRequest request) {
+        if (!isAdmin(request)) {
+            return Result.fail("UNAUTHORIZED", "无权访问");
+        }
+        Events event = eventsService.findById(eventId);
+        if (event == null) {
+            return Result.fail("活动不存在");
+        }
+
+        FormFields field = buildFormField(eventId, body, null);
+        if (field == null) {
+            return Result.fail("PARAM_INVALID", "字段标识和标题不能为空");
+        }
+        formFieldsService.insert(field);
+        return Result.ok(field);
+    }
+
+    @PutMapping("/events/{eventId}/form-fields/{fieldId}")
+    public Result updateFormField(@PathVariable Long eventId,
+                                  @PathVariable Long fieldId,
+                                  @RequestBody Map<String, Object> body,
+                                  HttpServletRequest request) {
+        if (!isAdmin(request)) {
+            return Result.fail("UNAUTHORIZED", "无权访问");
+        }
+        FormFields field = buildFormField(eventId, body, fieldId);
+        if (field == null) {
+            return Result.fail("PARAM_INVALID", "字段标识和标题不能为空");
+        }
+        formFieldsService.update(field);
+        return Result.ok(field);
+    }
+
     // ==================== 后台项目管理 ====================
 
     @GetMapping("/projects")
@@ -504,6 +569,90 @@ public class AdminController {
             return "root".equals(role) || "admin".equals(role);
         } catch (Exception e) {
             return false;
+        }
+    }
+
+    private boolean isValidFormTarget(String target) {
+        return "registration".equals(target) || "project".equals(target);
+    }
+
+    private FormFields buildFormField(Long eventId, Map<String, Object> body, Long id) {
+        String fieldKey = asString(body.get("fieldKey"));
+        String label = asString(body.get("label"));
+        String targetType = asString(body.getOrDefault("targetType", "registration"));
+        String fieldType = asString(body.getOrDefault("fieldType", "text"));
+
+        if (fieldKey == null || fieldKey.isBlank() || label == null || label.isBlank() || !isValidFormTarget(targetType)) {
+            return null;
+        }
+
+        FormFields field = new FormFields();
+        field.setId(id);
+        field.setEventId(eventId);
+        field.setTargetType(targetType);
+        field.setFieldKey(fieldKey.trim());
+        field.setLabel(label.trim());
+        field.setFieldType(normalizeFieldType(fieldType));
+        field.setRequired(asBooleanInt(body.get("required")));
+        field.setOptionsJson(toJson(body.get("options")));
+        field.setPlaceholder(asString(body.get("placeholder")));
+        field.setSortOrder(asInt(body.get("sortOrder"), 0));
+        field.setEnabled(asBooleanInt(body.getOrDefault("enabled", true)));
+        field.setCreatedAt(LocalDateTime.now());
+        field.setUpdatedAt(LocalDateTime.now());
+        return field;
+    }
+
+    private String normalizeFieldType(String fieldType) {
+        if (fieldType == null) return "text";
+        return switch (fieldType) {
+            case "textarea", "radio", "checkbox", "select", "date", "file", "url" -> fieldType;
+            default -> "text";
+        };
+    }
+
+    private String asString(Object value) {
+        return value == null ? null : String.valueOf(value);
+    }
+
+    private int asBooleanInt(Object value) {
+        if (value instanceof Boolean bool) {
+            return bool ? 1 : 0;
+        }
+        if (value instanceof Number num) {
+            return num.intValue() == 0 ? 0 : 1;
+        }
+        return "true".equalsIgnoreCase(String.valueOf(value)) || "1".equals(String.valueOf(value)) ? 1 : 0;
+    }
+
+    private int asInt(Object value, int fallback) {
+        if (value instanceof Number num) {
+            return num.intValue();
+        }
+        try {
+            return value == null ? fallback : Integer.parseInt(String.valueOf(value));
+        } catch (Exception e) {
+            return fallback;
+        }
+    }
+
+    private String toJson(Object value) {
+        if (value == null) {
+            return null;
+        }
+        if (value instanceof String text) {
+            String trimmed = text.trim();
+            if (trimmed.isEmpty()) {
+                return null;
+            }
+            if (trimmed.startsWith("[") || trimmed.startsWith("{")) {
+                return trimmed;
+            }
+        }
+        try {
+            return objectMapper.writeValueAsString(value);
+        } catch (Exception e) {
+            return null;
         }
     }
 }

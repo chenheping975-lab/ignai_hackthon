@@ -12,4 +12,10 @@ public interface FormFieldsService {
      * 查询活动的动态表单字段
      */
     List<FormFields> getFormFields(Long eventId, String target);
+
+    List<FormFields> getAllFormFields(Long eventId, String target);
+
+    FormFields insert(FormFields field);
+
+    int update(FormFields field);
 }
