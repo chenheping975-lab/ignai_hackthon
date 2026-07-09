@@ -11,14 +11,18 @@ import com.csust.hackathonserver.service.RegistrationMembersService;
 import com.csust.hackathonserver.service.RegistrationsService;
 import com.csust.hackathonserver.service.TracksService;
 import com.csust.hackathonserver.service.UsersService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.time.LocalDateTime;
 
 /**
@@ -40,6 +44,7 @@ public class RegistrationController {
     TracksService tracksService;
     @Autowired
     JwtUtil jwtUtil;
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     /**
      * 提交报名
@@ -102,6 +107,13 @@ public class RegistrationController {
         registration.setContactPhone(request.getContactPhone());         // 来自 /api/auth/me 的用户手机号
         registration.setContactEmail(request.getContactEmail());         // 来自 /api/auth/me 的用户邮箱
         registration.setTrackId(request.getTrackId());                   // 当前前端固定传 null
+        if (request.getPayload() != null && !request.getPayload().isEmpty()) {
+            try {
+                registration.setPayloadJson(objectMapper.writeValueAsString(request.getPayload()));
+            } catch (Exception e) {
+                return Result.fail("PARAM_INVALID", "报名表单内容格式不正确");
+            }
+        }
         registration.setStatus("pending");                               // 报名状态默认为待审核
         registration.setCreatedAt(LocalDateTime.now());
         registration.setUpdatedAt(LocalDateTime.now());
@@ -124,5 +136,38 @@ public class RegistrationController {
         vo.setCreatedAt(registration.getCreatedAt());
 
         return Result.ok(vo);
+    }
+
+    @GetMapping("/registrations/my")
+    public Result myRegistrations(HttpServletRequest srequest) {
+        String authHeader = srequest.getHeader("Authorization");
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            return Result.fail("UNAUTHORIZED", "请先登录");
+        }
+        Long userId;
+        try {
+            userId = jwtUtil.getUserId(authHeader.substring(7));
+        } catch (Exception e) {
+            return Result.fail("UNAUTHORIZED", "登录已失效");
+        }
+
+        List<Registrations> list = registrationsService.findByUserId(userId);
+        List<RegistrationVO> result = new ArrayList<>();
+        for (Registrations r : list) {
+            RegistrationVO vo = new RegistrationVO();
+            vo.setId(r.getId());
+            vo.setEventId(r.getEventId());
+            vo.setUserId(r.getUserId());
+            vo.setRegistrationType((String) r.getRegistrationType());
+            vo.setTeamName(r.getTeamName());
+            vo.setContactName(r.getContactName());
+            vo.setContactPhone(r.getContactPhone());
+            vo.setContactEmail(r.getContactEmail());
+            vo.setTrackId(r.getTrackId());
+            vo.setStatus((String) r.getStatus());
+            vo.setCreatedAt(r.getCreatedAt());
+            result.add(vo);
+        }
+        return Result.ok(result);
     }
 }

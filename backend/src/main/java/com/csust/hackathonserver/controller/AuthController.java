@@ -8,9 +8,11 @@ import com.csust.hackathonserver.pojo.LoginRequest;
 import com.csust.hackathonserver.pojo.RegisterRequest;
 import com.csust.hackathonserver.pojo.Users;
 import com.csust.hackathonserver.service.UsersService;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -61,5 +63,24 @@ public class AuthController {
         UserVO userVO=new UserVO(user.getName(), user.getEmail(), user.getPhone(), (String) user.getRole());
         response.setUser(userVO);
         return Result.ok(response);
+    }
+
+    @GetMapping("/me")
+    public Result me(HttpServletRequest request) {
+        String header = request.getHeader("Authorization");
+        if (header == null || !header.startsWith("Bearer ")) {
+            return Result.fail("UNAUTHORIZED", "请先登录");
+        }
+        try {
+            Long userId = jwtUtil.getUserId(header.substring(7));
+            Users user = usersService.findById(userId);
+            if (user == null) {
+                return Result.fail("用户不存在");
+            }
+            UserVO vo = new UserVO(user.getName(), user.getEmail(), user.getPhone(), (String) user.getRole());
+            return Result.ok(vo);
+        } catch (Exception e) {
+            return Result.fail("UNAUTHORIZED", "登录已失效");
+        }
     }
 }

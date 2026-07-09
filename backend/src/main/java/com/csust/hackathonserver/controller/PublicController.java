@@ -13,6 +13,7 @@ import com.csust.hackathonserver.service.EventsService;
 import com.csust.hackathonserver.service.FormFieldsService;
 import com.csust.hackathonserver.service.ProjectsService;
 import com.csust.hackathonserver.service.RatingsServices;
+import com.csust.hackathonserver.service.TracksService;
 import com.csust.hackathonserver.mapper.VotesMapper;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.pagehelper.PageInfo;
@@ -40,6 +41,8 @@ public class PublicController {
     @Autowired
     private FormFieldsService formFieldsService;
     @Autowired
+    private TracksService tracksService;
+    @Autowired
     private RatingsServices ratingsServices;
     @Autowired
     private VotesMapper votesMapper;
@@ -52,19 +55,16 @@ public class PublicController {
         if (currentEvent == null) {
             return Result.fail("暂时还没有符合条件的活动，敬请期待");
         }
-        EventVO eventVO = new EventVO();
-        eventVO.setId(currentEvent.getId());
-        eventVO.setTitle(currentEvent.getTitle());
-        eventVO.setSubtitle(currentEvent.getSubtitle());
-        eventVO.setLocation(currentEvent.getLocation());
-        eventVO.setDescription(currentEvent.getDescription());
-        if (Integer.valueOf(1).equals(currentEvent.getRegistrationOpen())) {
-            eventVO.setRegistrationOpen(true);
-        } else {
-            eventVO.setRegistrationOpen(false);
+        return Result.ok(buildEventData(currentEvent, true));
+    }
+
+    @GetMapping("/events/{eventId}")
+    public Result getEventById(@PathVariable Long eventId) {
+        Events event = eventsService.findById(eventId);
+        if (event == null) {
+            return Result.fail("活动不存在");
         }
-        eventVO.setRegistrationDeadline(currentEvent.getRegistrationDeadline());
-        return Result.ok(eventVO);
+        return Result.ok(buildEventData(event, true));
     }
 
     /**
@@ -84,8 +84,10 @@ public class PublicController {
             vo.setSubtitle(e.getSubtitle());
             vo.setLocation(e.getLocation());
             vo.setDescription(e.getDescription());
+            vo.setStatus((String) e.getStatus());
             vo.setRegistrationOpen(Integer.valueOf(1).equals(e.getRegistrationOpen()));
             vo.setRegistrationDeadline(e.getRegistrationDeadline());
+            vo.setSubmissionDeadline(e.getSubmissionDeadline());
             eventVOs.add(vo);
         }
         Map<String, Object> data = new HashMap<>();
@@ -98,22 +100,55 @@ public class PublicController {
 
     @GetMapping("/projects")
     public Result getPublicProjects(@RequestParam(value = "status", required = false) String status) {
-        List<Projects> projects = projectsService.getPublicProjects(status);
-        if (projects.size() == 0) {
-            return Result.fail("暂无公开作品，敬请期待");
+        if (status == null || status.isBlank()) {
+            status = "published";
         }
+        List<Projects> projects = projectsService.getPublicProjects(status);
         List<ProjectVO> projectVOS = new ArrayList<ProjectVO>();
         projects.forEach(project -> {
             ProjectVO projectVO = new ProjectVO();
             projectVO.setId(project.getId());
+            projectVO.setEventId(project.getEventId());
             projectVO.setTitle(project.getTitle());
             projectVO.setTrackId(project.getTrackId());
             projectVO.setTagline(project.getTagline());
             projectVO.setDescription(project.getDescription());
             projectVO.setCoverUrl(project.getDemoUrl());
+            projectVO.setStatus((String) project.getStatus());
+            projectVO.setSubmittedAt(project.getSubmittedAt());
+            projectVO.setVotes(votesMapper.countByProjectId(project.getId()));
             projectVOS.add(projectVO);
         });
         return Result.ok(projectVOS);
+    }
+
+    @GetMapping("/projects/{projectId}")
+    public Result getPublicProjectDetail(@PathVariable Long projectId) {
+        Projects project = projectsService.findById(projectId);
+        if (project == null) {
+            return Result.fail("作品不存在");
+        }
+        ProjectVO projectVO = new ProjectVO();
+        projectVO.setId(project.getId());
+        projectVO.setEventId(project.getEventId());
+        projectVO.setTitle(project.getTitle());
+        projectVO.setTrackId(project.getTrackId());
+        projectVO.setTagline(project.getTagline());
+        projectVO.setDescription(project.getDescription());
+        projectVO.setCoverUrl(project.getDemoUrl());
+        projectVO.setStatus((String) project.getStatus());
+        projectVO.setSubmittedAt(project.getSubmittedAt());
+        projectVO.setVotes(votesMapper.countByProjectId(project.getId()));
+        return Result.ok(projectVO);
+    }
+
+    @GetMapping("/events/{eventId}/tracks")
+    public Result getTracks(@PathVariable Long eventId) {
+        Events event = eventsService.findById(eventId);
+        if (event == null) {
+            return Result.fail("活动不存在");
+        }
+        return Result.ok(tracksService.findByEventId(eventId));
     }
 
     /**
@@ -171,6 +206,51 @@ public class PublicController {
         return Collections.emptyList();
     }
 
+    private Map<String, Object> buildEventData(Events event, boolean includeConfig) {
+        Map<String, Object> data = new HashMap<>();
+        data.put("id", event.getId());
+        data.put("title", event.getTitle());
+        data.put("subtitle", event.getSubtitle());
+        data.put("location", event.getLocation());
+        data.put("description", event.getDescription());
+        data.put("status", event.getStatus());
+        data.put("registrationOpen", Integer.valueOf(1).equals(event.getRegistrationOpen()));
+        data.put("ratingEnabled", Integer.valueOf(1).equals(event.getRatingEnabled()));
+        data.put("voteEnabled", Integer.valueOf(1).equals(event.getVoteEnabled()));
+        data.put("registrationDeadline", event.getRegistrationDeadline());
+        data.put("submissionDeadline", event.getSubmissionDeadline());
+        data.put("ratingStartAt", event.getRatingStartAt());
+        data.put("ratingEndAt", event.getRatingEndAt());
+        data.put("officialSiteUrl", event.getOfficialSiteUrl());
+        data.put("benchmarkSiteUrl", event.getBenchmarkSiteUrl());
+
+        if (includeConfig) {
+            data.put("tracks", tracksService.findByEventId(event.getId()));
+            data.put("registrationFields", buildFormFields(event.getId(), "registration"));
+            data.put("projectFields", buildFormFields(event.getId(), "project"));
+        }
+        return data;
+    }
+
+    private List<Map<String, Object>> buildFormFields(Long eventId, String target) {
+        List<FormFields> fields = formFieldsService.getFormFields(eventId, target);
+        List<Map<String, Object>> fieldList = new ArrayList<>();
+        ObjectMapper objectMapper = new ObjectMapper();
+        for (FormFields f : fields) {
+            Map<String, Object> fieldMap = new HashMap<>();
+            fieldMap.put("fieldKey", f.getFieldKey());
+            fieldMap.put("label", f.getLabel());
+            fieldMap.put("fieldType", f.getFieldType());
+            fieldMap.put("required", Integer.valueOf(1).equals(f.getRequired()));
+            fieldMap.put("placeholder", f.getPlaceholder());
+            fieldMap.put("sortOrder", f.getSortOrder());
+            fieldMap.put("enabled", Integer.valueOf(1).equals(f.getEnabled()));
+            fieldMap.put("options", parseOptions(f.getOptionsJson(), objectMapper));
+            fieldList.add(fieldMap);
+        }
+        return fieldList;
+    }
+
     @PostMapping("/projects/{projectId}/votes")
     public Result voteProject(@PathVariable Long projectId, HttpServletRequest request) {
         Long userId = getUserIdFromRequest(request);
@@ -181,7 +261,12 @@ public class PublicController {
         String voterKey = "user_" + userId;
         Votes existing = votesMapper.findByProjectIdAndVoterKey(projectId, voterKey);
         if (existing != null) {
-            return Result.fail("DUPLICATED", "已经点赞过了");
+            int count = votesMapper.countByProjectId(projectId);
+            Map<String, Object> data = new HashMap<>();
+            data.put("votes", count);
+            data.put("liked", true);
+            data.put("duplicated", true);
+            return Result.ok(data);
         }
 
         Votes vote = new Votes();
@@ -195,6 +280,8 @@ public class PublicController {
         int count = votesMapper.countByProjectId(projectId);
         Map<String, Object> data = new HashMap<>();
         data.put("votes", count);
+        data.put("liked", true);
+        data.put("duplicated", false);
         return Result.ok(data);
     }
 

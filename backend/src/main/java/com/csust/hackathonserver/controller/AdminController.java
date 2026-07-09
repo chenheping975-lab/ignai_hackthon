@@ -197,6 +197,15 @@ public class AdminController {
         if (event.getStatus() == null) {
             event.setStatus("draft");
         }
+        if (event.getRegistrationOpen() == null) {
+            event.setRegistrationOpen(0);
+        }
+        if (event.getRatingEnabled() == null) {
+            event.setRatingEnabled(0);
+        }
+        if (event.getVoteEnabled() == null) {
+            event.setVoteEnabled(0);
+        }
 
         eventsService.insert(event);
         return Result.ok(event);
@@ -204,7 +213,7 @@ public class AdminController {
 
     @PutMapping("/events/{eventId}")
     public Result updateEvent(@PathVariable Long eventId,
-                              @RequestBody Events event,
+                              @RequestBody Events incoming,
                               HttpServletRequest request) {
         if (!isAdmin(request)) {
             return Result.fail("UNAUTHORIZED", "无权访问");
@@ -215,8 +224,21 @@ public class AdminController {
             return Result.fail("活动不存在");
         }
 
-        event.setId(eventId);
-        eventsService.update(event);
+        // 只更新前端传来的字段，其余保留原值
+        if (incoming.getTitle() != null) existing.setTitle(incoming.getTitle());
+        if (incoming.getSubtitle() != null) existing.setSubtitle(incoming.getSubtitle());
+        if (incoming.getLocation() != null) existing.setLocation(incoming.getLocation());
+        if (incoming.getDescription() != null) existing.setDescription(incoming.getDescription());
+        if (incoming.getStatus() != null) existing.setStatus(incoming.getStatus());
+        if (incoming.getRegistrationOpen() != null) existing.setRegistrationOpen(incoming.getRegistrationOpen());
+        if (incoming.getRatingEnabled() != null) existing.setRatingEnabled(incoming.getRatingEnabled());
+        if (incoming.getVoteEnabled() != null) existing.setVoteEnabled(incoming.getVoteEnabled());
+        if (incoming.getRegistrationDeadline() != null) existing.setRegistrationDeadline(incoming.getRegistrationDeadline());
+        if (incoming.getSubmissionDeadline() != null) existing.setSubmissionDeadline(incoming.getSubmissionDeadline());
+        if (incoming.getOfficialSiteUrl() != null) existing.setOfficialSiteUrl(incoming.getOfficialSiteUrl());
+        if (incoming.getBenchmarkSiteUrl() != null) existing.setBenchmarkSiteUrl(incoming.getBenchmarkSiteUrl());
+
+        eventsService.update(existing);
         return Result.ok("活动更新成功");
     }
 

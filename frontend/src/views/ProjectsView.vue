@@ -1,13 +1,18 @@
 <script setup>
-import { ref, computed } from 'vue'
-import { useRoute } from 'vue-router'
-import { hackathonProjects, hackathonEvents } from '../data/mock'
+import { ref, computed, onMounted, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import { EventApi, PublicApi } from '../api'
+import { useAuthStore } from '../stores/auth'
 
 const route = useRoute()
-const eventId = computed(() => route.query.event || 'ignai-ai-skillathon')
-const event = computed(() => hackathonEvents.find(e => e.id === eventId.value))
+const router = useRouter()
+const auth = useAuthStore()
+const event = ref(null)
+const projects = ref([])
+const errorMessage = ref('')
+const likeMessage = ref('')
+const likeLoadingId = ref('')
 
-const projects = computed(() => hackathonProjects.filter(p => p.eventId === eventId.value))
 const tracks = computed(() => [...new Set(projects.value.map(p => p.track))])
 
 const selectedTrack = ref('')
@@ -24,11 +29,73 @@ const filteredProjects = computed(() => {
 
 const likedProjects = ref(new Set(JSON.parse(localStorage.getItem('ignai_project_likes') || '[]')))
 
-function toggleLike(id) {
-  if (likedProjects.value.has(id)) likedProjects.value.delete(id)
-  else likedProjects.value.add(id)
-  localStorage.setItem('ignai_project_likes', JSON.stringify([...likedProjects.value]))
+async function loadProjects() {
+  errorMessage.value = ''
+  try {
+    const routeEventId = route.query.event ? String(route.query.event) : ''
+    const currentEvent = /^\d+$/.test(routeEventId) ? await EventApi.detail(routeEventId) : await EventApi.current()
+    event.value = currentEvent
+    const list = await PublicApi.projects({ status: 'published' })
+    projects.value = (Array.isArray(list) ? list : [])
+      .filter(p => !currentEvent?.id || Number(p.eventId) === Number(currentEvent.id))
+      .map(p => normalizeProject(p, currentEvent))
+  } catch (e) {
+    errorMessage.value = e.message
+    projects.value = []
+  }
 }
+
+function normalizeProject(project, currentEvent) {
+  const track = (currentEvent?.tracks || []).find(t => Number(t.id) === Number(project.trackId))
+  return {
+    ...project,
+    id: String(project.id),
+    track: track?.name || project.trackName || '未分赛道',
+    image: project.coverUrl || '/img/ignai-business-card-mockup.webp',
+    files: project.files || [],
+    votes: project.votes || 0,
+    featured: project.featured || false,
+    submittedAt: project.submittedAt || project.createdAt || '',
+  }
+}
+
+async function toggleLike(id) {
+  const projectId = String(id)
+  errorMessage.value = ''
+  likeMessage.value = ''
+
+  if (likeLoadingId.value === projectId) {
+    return
+  }
+
+  if (!auth.isLoggedIn) {
+    likeMessage.value = '请先登录后点赞'
+    router.push({ name: 'login', query: { redirect: route.fullPath } })
+    return
+  }
+
+  likeLoadingId.value = projectId
+  try {
+    const res = await PublicApi.vote(projectId)
+    likedProjects.value = new Set([...likedProjects.value, projectId])
+
+    const project = projects.value.find(p => p.id === projectId)
+    if (project) {
+      if (typeof res?.votes === 'number') project.votes = res.votes
+      else project.votes += 1
+    }
+
+    likeMessage.value = res?.duplicated ? '你已经点赞过这个作品' : '点赞成功'
+    localStorage.setItem('ignai_project_likes', JSON.stringify([...likedProjects.value]))
+  } catch (e) {
+    errorMessage.value = e.message || '点赞失败，请稍后再试'
+  } finally {
+    likeLoadingId.value = ''
+  }
+}
+
+onMounted(loadProjects)
+watch(() => route.query.event, loadProjects)
 </script>
 
 <template>
@@ -38,6 +105,8 @@ function toggleLike(id) {
         <p class="eyebrow">PROJECTS</p>
         <h2>{{ event?.title || '作品展示' }}</h2>
         <p>浏览参赛作品，为你喜欢的项目点赞。</p>
+        <p v-if="errorMessage" class="api-error">{{ errorMessage }}</p>
+        <p v-if="likeMessage" class="like-note">{{ likeMessage }}</p>
       </div>
 
       <!-- Filters -->
@@ -54,7 +123,7 @@ function toggleLike(id) {
       </div>
 
       <!-- Project Cards -->
-      <div class="project-grid">
+      <div v-if="filteredProjects.length" class="project-grid">
         <article v-for="project in filteredProjects" :key="project.id" class="project-card">
           <div class="project-cover">
             <img :src="project.image" :alt="project.title" />
@@ -68,13 +137,19 @@ function toggleLike(id) {
               <div class="project-files">
                 <span v-for="file in project.files" :key="file" class="file-tag">{{ file }}</span>
               </div>
-              <button class="like-button" :class="{ liked: likedProjects.has(project.id) }" @click="toggleLike(project.id)">
-                {{ likedProjects.has(project.id) ? '已赞' : '点赞' }} {{ project.votes + (likedProjects.has(project.id) ? 1 : 0) }}
+              <button
+                class="like-button"
+                :class="{ liked: likedProjects.has(project.id) }"
+                :disabled="likeLoadingId === project.id"
+                @click="toggleLike(project.id)"
+              >
+                {{ likeLoadingId === project.id ? '点赞中' : likedProjects.has(project.id) ? '已赞' : auth.isLoggedIn ? '点赞' : '登录点赞' }} {{ project.votes }}
               </button>
             </div>
           </div>
         </article>
       </div>
+      <p v-else class="empty-state">当前活动还没有公开作品。</p>
     </section>
   </main>
 </template>
@@ -98,4 +173,8 @@ function toggleLike(id) {
 .file-tag { padding: 2px 8px; border: 1px solid var(--line); border-radius: 4px; font-size: .72rem; color: var(--muted); }
 .like-button { padding: 6px 14px; border: 1px solid var(--line); border-radius: 20px; background: transparent; cursor: pointer; font: inherit; font-size: .82rem; }
 .like-button.liked { border-color: var(--heat); color: var(--heat); }
+.like-button:disabled { cursor: not-allowed; opacity: .7; }
+.api-error, .empty-state { color: var(--muted); }
+.like-note { color: var(--heat); font-weight: 700; }
+.empty-state { text-align: center; padding: 40px 20px; }
 </style>

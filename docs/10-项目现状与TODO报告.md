@@ -1,8 +1,8 @@
 # 项目现状与 TODO 报告
 
-版本：v1.0
+版本：v1.1
 日期：2026-07-08
-状态：自测完成
+状态：前后台活动配置动态链路已打通
 
 ---
 
@@ -39,7 +39,7 @@
 | 用户注册 | RegisterView.vue | POST /api/auth/register | ✅ 可用 |
 | 用户登录 | LoginView.vue | POST /api/auth/login | ✅ 可用，返回 JWT + 用户信息 |
 | 活动列表 | EventsView.vue | GET /api/public/events | ✅ 可用 |
-| 活动详情 | EventView.vue | GET /api/public/events/current | ✅ 可用 |
+| 活动详情 | EventView.vue | GET /api/public/events/{eventId} | ✅ 可用，读取后端动态配置 |
 | 报名提交 | EventView.vue 表单 | POST /api/registrations | ✅ 可用（需登录） |
 | 作品展示 | ProjectsView.vue | GET /api/public/projects | ✅ 可用（当前无数据） |
 | 点赞 | ProjectsView.vue | — | ⚠️ 前端 localStorage 实现，未对接后端 |
@@ -55,16 +55,25 @@
 | API 层 | axios 封装，自动附带 JWT | ✅ |
 | Mock 数据 | 活动 + 项目 mock 数据 | ✅ |
 
-### 3.3 后台管理（前端 UI 存在，数据为 mock）
+### 3.3 后台管理
 
 | 功能 | 前端 | 后端 | 状态 |
 |------|------|------|------|
 | 仪表盘 | AdminView.vue 概览面板 | 无接口 | ⚠️ 硬编码数字 |
 | 报名列表 | AdminView.vue 表格 + 筛选 | 无接口 | ⚠️ 硬编码数据 |
 | 报名审核 | AdminView.vue 详情抽屉 | 无接口 | ⚠️ 仅本地状态 |
-| 活动管理 | AdminView.vue 占位 | 无接口 | ❌ 未实现 |
+| 活动管理 | AdminView.vue 配置编辑器 | GET/PUT /api/admin/events/*/config | ✅ 已联动云端数据库 |
 | 项目看板 | AdminView.vue 占位 | 无接口 | ❌ 未实现 |
 | 邮件管理 | AdminView.vue 占位 | 无接口 | ❌ 未实现 |
+
+### 3.4 本轮联调结果
+
+| 链路 | 验证结果 |
+|------|----------|
+| 后台读取当前活动配置 | ✅ `GET /api/admin/events/current/config` 返回活动 ID 1 |
+| 后台保存活动配置 | ✅ `PUT /api/admin/events/1/config` 写入 3 个赛道、4 个报名字段 |
+| 前台读取活动详情 | ✅ `GET /api/public/events/1` 返回同一份赛道和报名字段 |
+| 浏览器代理链路 | ✅ `http://localhost:5173/api/public/events/1 -> http://localhost:8080 -> MySQL` |
 
 ---
 
@@ -81,18 +90,17 @@
 | **P0** | GET /api/admin/registrations | 后台报名列表 | 后台核心功能 |
 | **P0** | GET /api/admin/registrations/{id} | 报名详情 | 后台核心功能 |
 | **P0** | PATCH /api/admin/registrations/{id}/review | 审核通过/拒绝 | 后台核心功能 |
-| **P1** | POST/PUT /api/admin/events | 活动 CRUD | 活动管理 |
+| **P1** | POST /api/admin/events | 新建活动 | 当前仅支持配置已存在活动 |
 | **P1** | GET /api/admin/users | 用户列表 | 用户管理 |
 | **P1** | POST /api/admin/mail/send | 发送邮件 | 邮件通知 |
 | **P2** | POST /api/projects | 项目提交 | 活动后流程 |
 | **P2** | POST /api/projects/{id}/vote | 投票 | 互动功能 |
-| **P2** | GET /api/public/events/{id}/tracks | 赛道信息 | 前端已调用 |
 
 ### 4.2 前端缺失功能
 
 | 优先级 | 功能 | 说明 |
 |--------|------|------|
-| **P0** | AdminView 对接真实 API | 当前全部硬编码 mock |
+| **P0** | AdminView 报名/项目/邮件对接真实 API | 活动管理已对接，其余仍为 mock |
 | **P0** | 报名状态查看页 | 用户登录后查看自己的报名结果 |
 | **P1** | 项目提交表单 | 参赛者上传作品 |
 | **P1** | 邮件管理面板 | 模板编辑 + 发送记录 |
@@ -129,13 +137,13 @@
 
 | # | 任务 | 负责 | 预估 |
 |---|------|------|------|
-| 10 | 后端实现 POST/PUT /api/admin/events（活动 CRUD） | 后端 | 2h |
+| 10 | 后端实现活动配置聚合 GET/PUT（已存在活动，MVP 已完成） | 后端 | 1.5h |
 | 11 | 后端实现 GET /api/admin/users（用户列表） | 后端 | 1h |
 | 12 | 后端实现邮件模板 CRUD（/api/admin/mail-templates） | 后端 | 2h |
 | 13 | 后端实现 POST /api/admin/registrations/{id}/mail-draft | 后端 | 2h |
 | 14 | 后端实现 POST /api/admin/mail/send | 后端 | 1h |
 | 15 | 后端配置文件上传（Multipart + /uploads/） | 后端 | 1h |
-| 16 | 前端活动管理面板对接 API | 前端 | 2h |
+| 16 | 前端活动管理面板对接 API（MVP 已完成） | 前端 | 2h |
 | 17 | 前端邮件管理面板对接 API | 前端 | 2h |
 
 ### Phase 3：项目提交与展示（P2）
@@ -146,7 +154,7 @@
 | 19 | 后端实现 GET /api/admin/projects（后台项目列表） | 后端 | 1h |
 | 20 | 后端实现 PATCH /api/admin/projects/{id}/showcase | 后端 | 1h |
 | 21 | 后端实现 POST /api/projects/{id}/vote（投票） | 后端 | 1h |
-| 22 | 后端实现 GET /api/public/events/{id}/tracks | 后端 | 0.5h |
+| 22 | 后端实现 GET /api/public/events/{id}/tracks（已完成） | 后端 | 0.5h |
 | 23 | 前端项目提交页面 | 前端 | 2h |
 | 24 | 前端投票功能对接后端 | 前端 | 1h |
 | 25 | 前端项目看板对接 API | 前端 | 2h |
@@ -180,4 +188,5 @@
 
 | 版本 | 日期 | 变更 |
 |------|------|------|
+| v1.1 | 2026-07-08 | 打通后台活动配置到前台活动详情页的动态链路，新增 admin/public 活动配置接口，云端数据库活动 ID 1 已写入 MVP 赛道和报名字段。 |
 | v1.0 | 2026-07-08 | 自测完成后输出，覆盖目标、现状、差距、TODO |

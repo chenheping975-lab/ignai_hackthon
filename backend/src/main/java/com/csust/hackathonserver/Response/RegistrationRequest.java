@@ -4,6 +4,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.Map;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -15,4 +17,5 @@ public class RegistrationRequest {
     private String contactPhone;
     private String contactEmail;
     private Long trackId;
+    private Map<String, Object> payload;
 }

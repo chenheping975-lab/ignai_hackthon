@@ -6,7 +6,7 @@ USE ignai_hackthon;
 
 CREATE TABLE users (
   id BIGINT PRIMARY KEY AUTO_INCREMENT,
-  role ENUM('admin', 'participant') NOT NULL DEFAULT 'participant',
+  role ENUM('root', 'admin', 'participant') NOT NULL DEFAULT 'participant',
   name VARCHAR(80) NOT NULL,
   email VARCHAR(160),
   phone VARCHAR(40),

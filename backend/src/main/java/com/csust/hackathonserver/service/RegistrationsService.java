@@ -23,4 +23,6 @@ public interface RegistrationsService {
     Registrations findById(Long id);
 
     int updateStatus(Long id, String status, String note);
+
+    List<Registrations> findByUserId(Long userId);
 }

@@ -59,12 +59,25 @@ public class ProjectController {
             return Result.fail("暂无进行中的活动");
         }
 
-        // 查用户的队伍
+        // 查用户在当前活动下的队伍；个人参赛时自动创建一个默认队伍承载作品归属
         List<Teams> userTeams = teamsService.findByUserId(userId);
-        if (userTeams.isEmpty()) {
-            return Result.fail("请先创建或加入队伍");
+        Teams team = null;
+        for (Teams item : userTeams) {
+            if (currentEvent.getId().equals(item.getEventId())) {
+                team = item;
+                break;
+            }
         }
-        Teams team = userTeams.get(0);
+        if (team == null) {
+            team = new Teams();
+            team.setEventId(currentEvent.getId());
+            team.setTeamName("个人作品-" + userId);
+            team.setLeaderUserId(userId);
+            team.setStatus("forming");
+            team.setCreatedAt(LocalDateTime.now());
+            team.setUpdatedAt(LocalDateTime.now());
+            teamsService.createTeam(team);
+        }
 
         // 检查是否已创建过作品
         Projects existing = projectsService.findByTeamId(team.getId());
@@ -110,6 +123,10 @@ public class ProjectController {
         if (existing == null) {
             return Result.fail("作品不存在");
         }
+        Teams team = teamsService.findById(existing.getTeamId());
+        if (team == null || !userId.equals(team.getLeaderUserId())) {
+            return Result.fail("FORBIDDEN", "只能修改自己队伍的作品");
+        }
 
         project.setId(projectId);
         projectsService.update(project);
@@ -126,6 +143,10 @@ public class ProjectController {
         Projects existing = projectsService.findById(projectId);
         if (existing == null) {
             return Result.fail("作品不存在");
+        }
+        Teams team = teamsService.findById(existing.getTeamId());
+        if (team == null || !userId.equals(team.getLeaderUserId())) {
+            return Result.fail("FORBIDDEN", "只能提交自己队伍的作品");
         }
 
         projectsService.submit(projectId);

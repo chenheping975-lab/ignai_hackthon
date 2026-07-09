@@ -38,6 +38,9 @@ public interface RegistrationsMapper {
 
     @Update("update registrations set status = #{status}, review_note = #{note}, reviewed_at = now() where id = #{id}")
     int updateStatus(@Param("id") Long id, @Param("status") String status, @Param("note") String note);
+
+    @Select("select * from registrations where user_id = #{userId} order by created_at desc")
+    List<Registrations> findByUserId(@Param("userId") Long userId);
 }
 
 

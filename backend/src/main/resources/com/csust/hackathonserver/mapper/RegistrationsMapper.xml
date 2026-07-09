@@ -35,9 +35,9 @@
     <!-- 插入报名记录，自动回填主键 id -->
     <insert id="insert" useGeneratedKeys="true" keyProperty="id">
         insert into registrations(event_id, user_id, registration_type, team_name,
-            contact_name, contact_phone, contact_email, track_id, status, created_at, updated_at)
+            contact_name, contact_phone, contact_email, track_id, status, payload_json, created_at, updated_at)
         values(#{eventId}, #{userId}, #{registrationType}, #{teamName},
-            #{contactName}, #{contactPhone}, #{contactEmail}, #{trackId}, #{status}, #{createdAt}, #{updatedAt})
+            #{contactName}, #{contactPhone}, #{contactEmail}, #{trackId}, #{status}, #{payloadJson}, #{createdAt}, #{updatedAt})
     </insert>
 
     <!-- 根据 eventId + userId 查询报名记录，用于防重复报名 -->

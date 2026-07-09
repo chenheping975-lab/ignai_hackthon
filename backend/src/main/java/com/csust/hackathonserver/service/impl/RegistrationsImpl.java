@@ -54,4 +54,9 @@ public class RegistrationsImpl implements RegistrationsService {
     public int updateStatus(Long id, String status, String note) {
         return registrationsMapper.updateStatus(id, status, note);
     }
+
+    @Override
+    public List<Registrations> findByUserId(Long userId) {
+        return registrationsMapper.findByUserId(userId);
+    }
 }

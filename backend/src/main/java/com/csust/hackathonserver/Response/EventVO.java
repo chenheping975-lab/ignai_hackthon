@@ -11,6 +11,8 @@ public class EventVO {
     private String subtitle;
     private String location;
     private String description;
+    private String status;
     private boolean registrationOpen;
     private LocalDateTime registrationDeadline;
+    private LocalDateTime submissionDeadline;
 }

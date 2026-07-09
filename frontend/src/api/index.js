@@ -54,12 +54,20 @@ export const AuthApi = {
   register: (data) => request('/auth/register', { method: 'POST', body: data }),
   login: (data) => request('/auth/login', { method: 'POST', body: data }),
   me: () => request('/auth/me'),
-  logout: () => request('/auth/logout', { method: 'POST' }),
+}
+
+export const RootApi = {
+  setupStatus: () => request('/root/setup-status'),
+  bootstrap: (data) => request('/root/bootstrap', { method: 'POST', body: data }),
+  login: (data) => request('/root/login', { method: 'POST', body: data }),
+  me: () => request('/root/me'),
 }
 
 export const EventApi = {
   current: () => request('/public/events/current'),
+  detail: (eventId) => request(`/public/events/${eventId}`),
   tracks: (eventId) => request(`/public/events/${eventId}/tracks`),
+  formFields: (eventId, target = 'registration') => request(`/public/events/${eventId}/form-fields?target=${target}`),
   list: (page = 1, pageSize = 6) => request(`/public/events?page=${page}&pageSize=${pageSize}`),
 }
 
@@ -70,4 +78,33 @@ export const RegistrationApi = {
 
 export const PublicApi = {
   projects: (params) => request(`/public/projects?${new URLSearchParams(params)}`),
+  projectDetail: (id) => request(`/public/projects/${id}`),
+  vote: (projectId) => request(`/public/projects/${projectId}/votes`, { method: 'POST' }),
+  rate: (projectId, data) => request(`/public/projects/${projectId}/ratings`, { method: 'POST', body: data }),
+}
+
+export const ProjectApi = {
+  mine: () => request('/projects/my'),
+  create: (data) => request('/projects', { method: 'POST', body: data }),
+  update: (id, data) => request(`/projects/${id}`, { method: 'PUT', body: data }),
+  submit: (id) => request(`/projects/${id}/submit`, { method: 'POST' }),
+}
+
+export const AdminApi = {
+  dashboard: () => request('/admin/dashboard'),
+  users: (params) => request(`/admin/users?${new URLSearchParams(params)}`),
+  createAdmin: (data) => request('/admin/users/admins', { method: 'POST', body: data }),
+  updateUserStatus: (userId, status) => request(`/admin/users/${userId}/status`, { method: 'PATCH', body: { status } }),
+  events: () => request('/admin/events'),
+  createEvent: (data) => request('/admin/events', { method: 'POST', body: data }),
+  updateEvent: (id, data) => request(`/admin/events/${id}`, { method: 'PUT', body: data }),
+  registrations: (params) => request(`/admin/registrations?${new URLSearchParams(params)}`),
+  registrationDetail: (id) => request(`/admin/registrations/${id}`),
+  reviewRegistration: (id, data) => request(`/admin/registrations/${id}/review`, { method: 'PATCH', body: data }),
+  batchReview: (data) => request('/admin/registrations/batch-review', { method: 'POST', body: data }),
+  tracks: (eventId) => request(`/admin/events/${eventId}/tracks`),
+  createTrack: (eventId, data) => request(`/admin/events/${eventId}/tracks`, { method: 'POST', body: data }),
+  projects: (params) => request(`/admin/projects?${new URLSearchParams(params)}`),
+  projectDetail: (id) => request(`/admin/projects/${id}`),
+  updateProjectStatus: (id, status) => request(`/admin/projects/${id}/status`, { method: 'PATCH', body: { status } }),
 }
